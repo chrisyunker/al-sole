@@ -34,6 +34,13 @@ A real-time web application that calculates and displays the user's distance fro
    - Show live clock
    - Indicate update status visually
 
+4. **Educational Formula Modal**
+   - Interactive modal displaying all calculation formulas
+   - Detailed explanations of astronomical concepts
+   - Visual formula breakdowns with color-coded variables
+   - Accessible via "View Formulas" button
+   - Keyboard shortcut support (ESC to close)
+
 ### Display Elements
 1. **Primary Display**
    - Distance in kilometers (main display)
@@ -49,7 +56,18 @@ A real-time web application that calculates and displays the user's distance fro
 
 3. **User Controls**
    - Button to refresh/update location
+   - Button to view calculation formulas
    - Status messages for loading/errors
+
+4. **Formula Modal**
+   - Full-screen overlay with educational content
+   - Sections for each calculation type:
+     - Earth-Sun distance calculation
+     - User distance offset calculation
+     - Day/Night determination logic
+     - Solar noon offset calculation
+   - Color-coded variables and formulas
+   - Close button and ESC key support
 
 ---
 
@@ -110,6 +128,17 @@ c) Distance offset:
 - Update DOM elements with new values
 - Use CSS animations for visual feedback
 
+### Modal Interactions
+- **Formula Modal Display**:
+  - Full-screen overlay with semi-transparent backdrop
+  - Click outside modal or press ESC key to close
+  - Smooth fade-in and slide-down animations
+  - Detailed explanations of all astronomical calculations
+- **Event Handling**:
+  - Button click to open modal
+  - ESC key listener for keyboard accessibility
+  - Click-outside detection for intuitive closing
+
 ### Error Handling
 - Geolocation permission denied
 - Geolocation unavailable
@@ -143,6 +172,7 @@ c) Distance offset:
 │   📍 42.3601°, -71.0589°       │
 ├─────────────────────────────────┤
 │      🔄 Update Location         │
+│      📐 View Formulas           │
 └─────────────────────────────────┘
 ```
 
@@ -167,9 +197,12 @@ c) Distance offset:
 ## File Structure
 ```
 /al-sole
-  ├── index.html      # Main application (all-in-one file)
-  ├── SPEC.md         # This specification document
-  └── README.md       # Project documentation (optional)
+  ├── index.html           # Main application (all-in-one file)
+  ├── SPECIFICATION.md     # Technical specification document
+  ├── CLAUDE.md            # Developer workflow guide for Claude Code
+  ├── README.md            # Project overview and usage guide
+  └── tasks/
+      └── todo.md          # Task tracking and planning
 ```
 
 ### Implementation Notes
