@@ -74,14 +74,52 @@ The application uses several astronomical calculations:
 
 For detailed technical specifications, see [SPECIFICATION.md](SPECIFICATION.md)
 
+## Deployment
+
+The application can be deployed to AWS using the included Terraform configuration:
+
+```bash
+# Initial setup
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your values
+terraform init
+terraform apply
+
+# Deploy updates
+cd terraform
+terraform apply
+```
+
+The infrastructure includes:
+- **S3** for static hosting
+- **CloudFront** for CDN and HTTPS
+- **Route53** for DNS (alsole.yunker.dev)
+- **ACM** for SSL certificate
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
+
 ## File Structure
 
 ```
 /al-sole
   ├── index.html           # Main application (all-in-one file)
   ├── SPECIFICATION.md     # Comprehensive technical specification
+  ├── DEPLOYMENT.md        # AWS deployment guide
   ├── CLAUDE.md            # Developer workflow guide
   ├── README.md            # This file
+  ├── terraform/           # Infrastructure as code
+  │   ├── main.tf          # Main orchestration (providers, ACM, modules)
+  │   ├── variables.tf     # Root-level input variables
+  │   ├── outputs.tf       # Root-level outputs
+  │   ├── .gitignore       # Terraform-specific ignores
+  │   ├── .tool-versions   # Tool version management
+  │   └── modules/         # Terraform modules
+  │       ├── cloudfront/  # CloudFront CDN configuration
+  │       ├── route53/     # DNS records configuration
+  │       └── s3_bucket/   # S3 bucket configuration
+  ├── website/
+  │   └── index.html.tpl   # Website template with Google Analytics
   └── tasks/
       └── todo.md          # Task tracking and planning
 ```

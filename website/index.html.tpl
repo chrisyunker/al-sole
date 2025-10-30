@@ -302,6 +302,18 @@
             }
         }
     </style>
+
+  <!-- Google Analytics -->
+  %{ if google_analytics_id != "" }
+  <script async src="https://www.googletagmanager.com/gtag/js?id=${google_analytics_id}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${google_analytics_id}');
+  </script>
+  %{ endif }
+
 </head>
 <body>
     <div class="container">
@@ -545,7 +557,7 @@
             document.getElementById('solarNoon').textContent = solarNoonOffset;
 
             document.getElementById('coordinates').textContent =
-                `📍 ${userLat.toFixed(4)}°, ${userLon.toFixed(4)}°`;
+                `📍 $${userLat.toFixed(4)}°, $${userLon.toFixed(4)}°`;
         }
 
         function getDayOfYear(date) {
@@ -643,8 +655,8 @@
                 return 'At solar noon';
             }
 
-            const timeStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-            return offset > 0 ? `+${timeStr}` : `-${timeStr}`;
+            const timeStr = hrs > 0 ? `$${hrs}h $${mins}m` : `$${mins}m`;
+            return offset > 0 ? `+$${timeStr}` : `-$${timeStr}`;
         }
 
         // Modal functions

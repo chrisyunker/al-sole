@@ -201,6 +201,19 @@ c) Distance offset:
   ├── SPECIFICATION.md     # Technical specification document
   ├── CLAUDE.md            # Developer workflow guide for Claude Code
   ├── README.md            # Project overview and usage guide
+  ├── DEPLOYMENT.md        # AWS deployment guide
+  ├── terraform/           # Infrastructure as code
+  │   ├── main.tf          # Main orchestration (providers, ACM, modules)
+  │   ├── variables.tf     # Root-level input variables
+  │   ├── outputs.tf       # Root-level outputs
+  │   └── modules/         # Terraform modules
+  │       ├── cloudfront/  # CloudFront CDN configuration
+  │       ├── route53/     # DNS records configuration
+  │       └── s3_bucket/   # S3 bucket configuration
+  ├── website/
+  │   └── index.html.tpl   # Website template with Google Analytics
+  ├── scripts/
+  │   └── deploy.sh        # Automated deployment script
   └── tasks/
       └── todo.md          # Task tracking and planning
 ```

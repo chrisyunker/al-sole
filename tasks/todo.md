@@ -1,72 +1,78 @@
-# Documentation Update Plan
+# Fix CloudFront SSL Certificate Error
 
-## Tasks
+## Context
+CloudFront distribution creation is failing with error: "The specified SSL certificate doesn't exist, isn't in us-east-1 region, isn't valid, or doesn't include a valid certificate chain."
 
-- [x] Review current implementation vs SPECIFICATION.md
-- [x] Update SPECIFICATION.md - Features section to include Formula Modal
-- [x] Update SPECIFICATION.md - Display Elements section to include Formula button
-- [x] Update SPECIFICATION.md - File Structure section (fix SPEC.md reference, note README.md absence)
-- [x] Update SPECIFICATION.md - UI Layout to reflect Formula button
-- [x] Update SPECIFICATION.md - Technical Approach to document modal interactions
-- [x] Create README.md with project overview, setup, and usage instructions
-- [x] Final review of all documentation
+The issue is that the ACM certificate resources in `terraform/main.tf` don't explicitly specify the `provider = aws.us_east_1` configuration, which is required for CloudFront to use the certificate.
 
-## Review
+## Root Cause
+- ACM certificates for CloudFront **must** be created in the us-east-1 region
+- The certificate resources (lines 92-111 in main.tf) don't explicitly use the `aws.us_east_1` provider alias
+- Without the explicit provider, Terraform may be creating the cert in the wrong region or CloudFront can't reference it correctly
+
+## Plan
+
+### Changes Required
+- [ ] Update `aws_acm_certificate.cert` resource to explicitly use `provider = aws.us_east_1`
+- [ ] Update `aws_acm_certificate_validation.cert` resource to explicitly use `provider = aws.us_east_1`
+- [ ] Run `terraform plan` to verify the configuration is correct
+- [ ] Run `terraform apply` to deploy the fix
+
+---
+
+## Implementation Details
+
+The fix is simple - add `provider = aws.us_east_1` to both certificate resources:
+
+```hcl
+resource "aws_acm_certificate" "cert" {
+  provider = aws.us_east_1  # Add this line
+  ...
+}
+
+resource "aws_acm_certificate_validation" "cert" {
+  provider = aws.us_east_1  # Add this line
+  ...
+}
+```
+
+This ensures the certificate is explicitly created in us-east-1, which is required by CloudFront for custom SSL certificates.
+
+---
+
+## Review Section
 
 ### Summary of Changes
 
-All documentation has been successfully updated to reflect the current state of the Al Sole application.
-
-### SPECIFICATION.md Updates
-
-1. **Features Section** (SPECIFICATION.md:37-42)
-   - Added new section "Educational Formula Modal" documenting the interactive modal feature
-   - Includes formula explanations, color-coded variables, and keyboard shortcuts
-
-2. **Display Elements Section** (SPECIFICATION.md:57-70)
-   - Added "Button to view calculation formulas" to User Controls
-   - Added comprehensive "Formula Modal" section documenting modal content and behavior
-
-3. **File Structure Section** (SPECIFICATION.md:185-194)
-   - Fixed incorrect reference from "SPEC.md" to "SPECIFICATION.md"
-   - Added CLAUDE.md and tasks/ directory to reflect actual repository structure
-   - Added README.md reference
-
-4. **UI Layout Section** (SPECIFICATION.md:163-164)
-   - Updated ASCII diagram to include "View Formulas" button
-
-5. **Technical Approach Section** (SPECIFICATION.md:131-140)
-   - Added "Modal Interactions" section documenting modal behavior
-   - Documented event handling for keyboard and mouse interactions
-
-### README.md Creation
-
-Created comprehensive README.md with:
-- Project overview and feature highlights
-- Quick start instructions
-- Detailed explanation of what the app displays
-- Educational value proposition
-- Technical details and file structure
-- Privacy information
-- Future enhancement ideas
-
-### Documentation Quality
-
-- All documentation is now synchronized with the implemented features
-- Clear separation between user-facing (README.md) and technical (SPECIFICATION.md) documentation
-- Developer workflow documented in CLAUDE.md
-- Task tracking maintained in tasks/todo.md
+Successfully fixed the CloudFront SSL certificate error by explicitly specifying the us-east-1 provider for ACM certificate resources. The infrastructure is now fully deployed and operational.
 
 ### Files Modified
 
-- `/Users/cyunker/git/github.com/chrisyunker/al-sole/SPECIFICATION.md` - Updated
-- `/Users/cyunker/git/github.com/chrisyunker/al-sole/README.md` - Created
-- `/Users/cyunker/git/github.com/chrisyunker/al-sole/tasks/todo.md` - Updated
+**terraform/main.tf** (lines 92-115):
+- Added `provider = aws.us_east_1` to `aws_acm_certificate.cert` resource
+- Added `provider = aws.us_east_1` to `aws_acm_certificate_validation.cert` resource
 
-### Implementation Impact
+### Deployment Results
 
-No code changes were made to index.html. All updates were documentation-only, ensuring:
-- Implementation remains stable
-- Documentation accurately reflects features
-- Future developers have clear technical reference
-- End users have accessible usage guide
+- ACM certificate created successfully in us-east-1 region
+  - New ARN: `arn:aws:acm:us-east-1:714285204136:certificate/756730bc-068f-43ab-8f3e-9c339835d694`
+- CloudFront distribution created: `E1PRN8HJC8QMIS`
+- CloudFront domain: Available (visible in outputs)
+- DNS records configured in Cloudflare
+- Cache invalidation completed successfully
+- S3 bucket policy configured for CloudFront access
+
+### Key Improvements
+
+1. **Correct Regional Configuration**: Certificate now explicitly created in us-east-1, which is required by CloudFront
+2. **Successful Deployment**: All resources deployed without errors in ~3.5 minutes
+3. **Automated DNS Setup**: Cloudflare DNS records automatically configured
+4. **Security**: S3 bucket locked down with Origin Access Control (OAC)
+
+### Infrastructure Created
+
+- 7 new resources added
+- 1 resource replaced (DNS validation record)
+- 0 errors during deployment
+
+The website infrastructure is now fully operational and ready to serve content via CloudFront at `alsole.yunker.dev`.
