@@ -483,16 +483,16 @@
         }
     </style>
 
-  <!-- Google Analytics -->
-  %{ if google_analytics_id != "" }
-  <script async src="https://www.googletagmanager.com/gtag/js?id=${google_analytics_id}"></script>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y5CZBN42C4"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', '${google_analytics_id}');
+
+    gtag('config', 'G-Y5CZBN42C4');
   </script>
-  %{ endif }
 
 </head>
 <body>
@@ -505,7 +505,7 @@
                 <button class="toggle-btn" id="yearlyViewBtn" onclick="setGraphView('yearly')">1 Year</button>
             </div>
             <div id="graphLegend" class="graph-legend"></div>
-            <canvas id="distanceGraph" width="600" height="300"></canvas>
+            <canvas id="distanceGraph" width="600" height="340"></canvas>
         </div>
 
         <div class="comparison-section" id="comparisonSection" style="display: none;">
@@ -806,7 +806,7 @@
                 // Set canvas size for high DPI displays
                 const rect = canvas.getBoundingClientRect();
                 canvas.width = 600;
-                canvas.height = 300;
+                canvas.height = 340;
             }
         }
 

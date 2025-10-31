@@ -129,7 +129,7 @@ S3_BUCKET=$(terraform output -raw s3_bucket_name)
 DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)
 
 # Upload to S3
-aws s3 cp ../website/index.html.tpl "s3://${S3_BUCKET}/index.html" \
+aws s3 cp ../website/index.html "s3://${S3_BUCKET}/index.html" \
     --content-type "text/html" \
     --cache-control "max-age=300"
 

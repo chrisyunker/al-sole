@@ -119,7 +119,7 @@ For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
   │       ├── route53/     # DNS records configuration
   │       └── s3_bucket/   # S3 bucket configuration
   ├── website/
-  │   └── index.html.tpl   # Website template with Google Analytics
+  │   └── index.html       # Main website file
   └── tasks/
       └── todo.md          # Task tracking and planning
 ```

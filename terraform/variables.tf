@@ -99,17 +99,6 @@ variable "force_destroy" {
   default     = false
 }
 
-variable "google_analytics_id" {
-  description = "Google Analytics 4 measurement ID (format: G-XXXXXXXXXX)"
-  type        = string
-  default     = "G-Y5CZBN42C4"
-
-  validation {
-    condition = can(regex("^(G-[A-Z0-9]{10}|)$", var.google_analytics_id))
-    error_message = "Google Analytics ID must be in the format G-XXXXXXXXXX or empty to disable         analytics."
-  }
-}
-
 variable "tags" {
   description = "Additional tags to apply to all resources"
   type        = map(string)
