@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(terraform plan:*)"
+      "Bash(terraform plan:*)",
+      "Bash(/Users/cyunker/git/github.com/chrisyunker/al-sole/scripts/build-local.sh)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": []

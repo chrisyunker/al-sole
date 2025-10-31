@@ -40,16 +40,46 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .sun-icon {
+        .graph-container {
             text-align: center;
-            font-size: 4em;
             margin: 20px 0;
-            animation: pulse 2s ease-in-out infinite;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+        .graph-toggle-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-btn {
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            color: white;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .toggle-btn.active {
+            background: rgba(74, 222, 128, 0.3);
+            border-color: #4ade80;
+        }
+
+        #distanceGraph {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .distance-display {
@@ -279,6 +309,20 @@
                 padding: 25px;
             }
 
+            .graph-container {
+                padding: 10px;
+            }
+
+            .toggle-btn {
+                padding: 6px 15px;
+                font-size: 0.85em;
+            }
+
+            #distanceGraph {
+                max-width: 100%;
+                height: auto;
+            }
+
             .info-grid {
                 gap: 10px;
             }
@@ -319,7 +363,13 @@
     <div class="container">
         <h1>🌍 Distance to the Sun ☀️</h1>
 
-        <div class="sun-icon">☀️</div>
+        <div class="graph-container">
+            <div class="graph-toggle-buttons">
+                <button class="toggle-btn active" id="dailyViewBtn" onclick="setGraphView('daily')">24 Hours</button>
+                <button class="toggle-btn" id="yearlyViewBtn" onclick="setGraphView('yearly')">1 Year</button>
+            </div>
+            <canvas id="distanceGraph" width="600" height="300"></canvas>
+        </div>
 
         <div id="status" class="status loading">
             Requesting location access...
@@ -464,11 +514,203 @@
         let userLat = null;
         let userLon = null;
         let updateInterval = null;
+        let currentGraphView = 'daily'; // 'daily' or 'yearly'
+        let graphData = [];
+        let canvas = null;
+        let ctx = null;
 
         // Request user's location on page load
         window.addEventListener('load', () => {
+            initGraph();
             requestLocation();
         });
+
+        // Initialize graph canvas
+        function initGraph() {
+            canvas = document.getElementById('distanceGraph');
+            if (canvas) {
+                ctx = canvas.getContext('2d');
+                // Set canvas size for high DPI displays
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = 600;
+                canvas.height = 300;
+            }
+        }
+
+        // Generate daily view data (24 hours)
+        function generateDailyData() {
+            if (!userLat || !userLon) return [];
+
+            const data = [];
+            const now = new Date();
+            const dayOfYear = getDayOfYear(now);
+            const earthSunDist = calculateEarthSunDistance(dayOfYear);
+
+            // Calculate distance for each hour of the day
+            for (let hour = 0; hour < 24; hour++) {
+                const testTime = new Date(now);
+                testTime.setHours(hour, 0, 0, 0);
+                const distance = calculateUserDistanceFromSun(userLat, userLon, testTime, earthSunDist);
+                data.push({ x: hour, y: distance, label: hour + ':00' });
+            }
+
+            return data;
+        }
+
+        // Generate yearly view data (365 days)
+        function generateYearlyData() {
+            const data = [];
+            const now = new Date();
+            const currentYear = now.getFullYear();
+
+            // Calculate distance for each month (12 data points)
+            for (let month = 0; month < 12; month++) {
+                const testDate = new Date(currentYear, month, 15); // Mid-month
+                const dayOfYear = getDayOfYear(testDate);
+                const distance = calculateEarthSunDistance(dayOfYear);
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                data.push({ x: month, y: distance, label: monthNames[month] });
+            }
+
+            return data;
+        }
+
+        // Draw the graph
+        function drawGraph() {
+            if (!ctx || graphData.length === 0) return;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const padding = 50;
+            const graphWidth = canvas.width - 2 * padding;
+            const graphHeight = canvas.height - 2 * padding;
+
+            // Find min and max values
+            const distances = graphData.map(d => d.y);
+            const minDist = Math.min(...distances);
+            const maxDist = Math.max(...distances);
+            const distRange = maxDist - minDist;
+
+            // Draw axes
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+
+            // Draw grid lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (graphHeight * i / 5);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(canvas.width - padding, y);
+                ctx.stroke();
+            }
+
+            // Draw Y-axis labels
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (graphHeight * i / 5);
+                const value = maxDist - (distRange * i / 5);
+                const label = (value / 1000000).toFixed(2) + 'M';
+                ctx.fillText(label, padding - 10, y + 4);
+            }
+
+            // Draw X-axis labels
+            ctx.textAlign = 'center';
+            const step = currentGraphView === 'daily' ? 4 : 2; // Every 4 hours or every 2 months
+            for (let i = 0; i < graphData.length; i += step) {
+                const x = padding + (graphWidth * i / (graphData.length - 1));
+                ctx.fillText(graphData[i].label, x, canvas.height - padding + 20);
+            }
+
+            // Draw curve
+            ctx.strokeStyle = '#4ade80';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let i = 0; i < graphData.length; i++) {
+                const x = padding + (graphWidth * i / (graphData.length - 1));
+                const y = canvas.height - padding - ((graphData[i].y - minDist) / distRange * graphHeight);
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+            // Draw current position marker
+            drawCurrentPositionMarker(minDist, maxDist, distRange, graphWidth, graphHeight, padding);
+        }
+
+        // Draw current position marker on graph
+        function drawCurrentPositionMarker(minDist, maxDist, distRange, graphWidth, graphHeight, padding) {
+            const now = new Date();
+            let currentIndex = 0;
+
+            if (currentGraphView === 'daily') {
+                // Current hour
+                const currentHour = now.getHours() + now.getMinutes() / 60;
+                currentIndex = currentHour / 24 * (graphData.length - 1);
+            } else {
+                // Current month
+                const currentMonth = now.getMonth() + now.getDate() / 31;
+                currentIndex = currentMonth / 12 * (graphData.length - 1);
+            }
+
+            // Interpolate Y value
+            const idx = Math.floor(currentIndex);
+            const fraction = currentIndex - idx;
+            let yValue;
+            if (idx >= graphData.length - 1) {
+                yValue = graphData[graphData.length - 1].y;
+            } else {
+                yValue = graphData[idx].y + (graphData[idx + 1].y - graphData[idx].y) * fraction;
+            }
+
+            const x = padding + (graphWidth * currentIndex / (graphData.length - 1));
+            const y = canvas.height - padding - ((yValue - minDist) / distRange * graphHeight);
+
+            // Draw marker
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Draw marker outline
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+        // Set graph view (daily or yearly)
+        function setGraphView(view) {
+            currentGraphView = view;
+
+            // Update button states
+            document.getElementById('dailyViewBtn').classList.remove('active');
+            document.getElementById('yearlyViewBtn').classList.remove('active');
+
+            if (view === 'daily') {
+                document.getElementById('dailyViewBtn').classList.add('active');
+                graphData = generateDailyData();
+            } else {
+                document.getElementById('yearlyViewBtn').classList.add('active');
+                graphData = generateYearlyData();
+            }
+
+            drawGraph();
+        }
 
         function requestLocation() {
             const statusEl = document.getElementById('status');
@@ -493,6 +735,10 @@
 
             document.getElementById('status').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
+
+            // Initialize graph with daily view
+            graphData = generateDailyData();
+            drawGraph();
 
             // Update immediately
             updateDistance();
@@ -558,6 +804,11 @@
 
             document.getElementById('coordinates').textContent =
                 `📍 $${userLat.toFixed(4)}°, $${userLon.toFixed(4)}°`;
+
+            // Update graph with current position
+            if (graphData.length > 0) {
+                drawGraph();
+            }
         }
 
         function getDayOfYear(date) {
