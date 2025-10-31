@@ -102,7 +102,7 @@ variable "force_destroy" {
 variable "google_analytics_id" {
   description = "Google Analytics 4 measurement ID (format: G-XXXXXXXXXX)"
   type        = string
-  default     = ""
+  default     = "G-Y5CZBN42C4"
 
   validation {
     condition = can(regex("^(G-[A-Z0-9]{10}|)$", var.google_analytics_id))

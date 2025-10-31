@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Distance to the Sun - Al Sole</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <style>
         * {
             margin: 0;
@@ -296,6 +297,141 @@
             transform: translateY(-2px);
         }
 
+        .comparison-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .comparison-section h3 {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-field {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .input-field label {
+            display: block;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .input-field input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .input-field select {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            color: white;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        .input-field select option {
+            background: #1e3c72;
+            color: white;
+            padding: 8px;
+        }
+
+        .add-location-btn {
+            padding: 10px 20px;
+            background: rgba(74, 222, 128, 0.3);
+            border: 1px solid #4ade80;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .add-location-btn:hover {
+            background: rgba(74, 222, 128, 0.5);
+        }
+
+        .comparison-locations {
+            margin-top: 15px;
+        }
+
+        .location-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+
+        .location-label {
+            flex: 1;
+            font-size: 0.9em;
+        }
+
+        .remove-btn {
+            padding: 5px 15px;
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 4px;
+            color: white;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .remove-btn:hover {
+            background: rgba(255, 0, 0, 0.5);
+        }
+
+        .graph-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 0.85em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
         @media (max-width: 600px) {
             h1 {
                 font-size: 2em;
@@ -368,7 +504,22 @@
                 <button class="toggle-btn active" id="dailyViewBtn" onclick="setGraphView('daily')">24 Hours</button>
                 <button class="toggle-btn" id="yearlyViewBtn" onclick="setGraphView('yearly')">1 Year</button>
             </div>
+            <div id="graphLegend" class="graph-legend"></div>
             <canvas id="distanceGraph" width="600" height="300"></canvas>
+        </div>
+
+        <div class="comparison-section" id="comparisonSection" style="display: none;">
+            <h3>Compare Locations</h3>
+            <div class="input-row">
+                <div class="input-field" style="flex: 2;">
+                    <label>Select a City</label>
+                    <select id="citySelect">
+                        <option value="">Choose a city...</option>
+                    </select>
+                </div>
+            </div>
+            <button class="add-location-btn" onclick="addComparisonLocation()">Add Location</button>
+            <div id="comparisonLocations" class="comparison-locations"></div>
         </div>
 
         <div id="status" class="status loading">
@@ -387,14 +538,6 @@
             </div>
 
             <div class="info-grid">
-                <div class="info-card">
-                    <div class="info-label">Earth-Sun Distance</div>
-                    <div class="info-value" id="earthSunDist">-</div>
-                </div>
-                <div class="info-card">
-                    <div class="info-label">Your Position</div>
-                    <div class="info-value" id="userPosition">-</div>
-                </div>
                 <div class="info-card">
                     <div class="info-label">Local Time</div>
                     <div class="info-value" id="localTime">-</div>
@@ -518,12 +661,142 @@
         let graphData = [];
         let canvas = null;
         let ctx = null;
+        let comparisonLocations = [];
+        const colorPalette = ['#4ade80', '#ff6b6b', '#4ecdc4', '#ffd93d', '#a78bfa'];
+        const MAX_LOCATIONS = 4;
+
+        // Preset cities around the world
+        const cities = [
+            // North America
+            { name: "New York, USA", lat: 40.7128, lon: -74.0060 },
+            { name: "Los Angeles, USA", lat: 34.0522, lon: -118.2437 },
+            { name: "Chicago, USA", lat: 41.8781, lon: -87.6298 },
+            { name: "Houston, USA", lat: 29.7604, lon: -95.3698 },
+            { name: "Miami, USA", lat: 25.7617, lon: -80.1918 },
+            { name: "Seattle, USA", lat: 47.6062, lon: -122.3321 },
+            { name: "San Francisco, USA", lat: 37.7749, lon: -122.4194 },
+            { name: "Toronto, Canada", lat: 43.6532, lon: -79.3832 },
+            { name: "Vancouver, Canada", lat: 49.2827, lon: -123.1207 },
+            { name: "Mexico City, Mexico", lat: 19.4326, lon: -99.1332 },
+            { name: "Guadalajara, Mexico", lat: 20.6597, lon: -103.3496 },
+
+            // South America
+            { name: "São Paulo, Brazil", lat: -23.5505, lon: -46.6333 },
+            { name: "Rio de Janeiro, Brazil", lat: -22.9068, lon: -43.1729 },
+            { name: "Buenos Aires, Argentina", lat: -34.6037, lon: -58.3816 },
+            { name: "Lima, Peru", lat: -12.0464, lon: -77.0428 },
+            { name: "Bogotá, Colombia", lat: 4.7110, lon: -74.0721 },
+            { name: "Santiago, Chile", lat: -33.4489, lon: -70.6693 },
+            { name: "Caracas, Venezuela", lat: 10.4806, lon: -66.9036 },
+
+            // Europe
+            { name: "London, UK", lat: 51.5074, lon: -0.1278 },
+            { name: "Paris, France", lat: 48.8566, lon: 2.3522 },
+            { name: "Berlin, Germany", lat: 52.5200, lon: 13.4050 },
+            { name: "Madrid, Spain", lat: 40.4168, lon: -3.7038 },
+            { name: "Rome, Italy", lat: 41.9028, lon: 12.4964 },
+            { name: "Amsterdam, Netherlands", lat: 52.3676, lon: 4.9041 },
+            { name: "Stockholm, Sweden", lat: 59.3293, lon: 18.0686 },
+            { name: "Oslo, Norway", lat: 59.9139, lon: 10.7522 },
+            { name: "Copenhagen, Denmark", lat: 55.6761, lon: 12.5683 },
+            { name: "Helsinki, Finland", lat: 60.1695, lon: 24.9354 },
+            { name: "Reykjavik, Iceland", lat: 64.1466, lon: -21.9426 },
+            { name: "Dublin, Ireland", lat: 53.3498, lon: -6.2603 },
+            { name: "Lisbon, Portugal", lat: 38.7223, lon: -9.1393 },
+            { name: "Athens, Greece", lat: 37.9838, lon: 23.7275 },
+            { name: "Moscow, Russia", lat: 55.7558, lon: 37.6173 },
+            { name: "Istanbul, Turkey", lat: 41.0082, lon: 28.9784 },
+            { name: "Vienna, Austria", lat: 48.2082, lon: 16.3738 },
+            { name: "Prague, Czech Republic", lat: 50.0755, lon: 14.4378 },
+            { name: "Warsaw, Poland", lat: 52.2297, lon: 21.0122 },
+
+            // Asia
+            { name: "Tokyo, Japan", lat: 35.6762, lon: 139.6503 },
+            { name: "Beijing, China", lat: 39.9042, lon: 116.4074 },
+            { name: "Shanghai, China", lat: 31.2304, lon: 121.4737 },
+            { name: "Hong Kong", lat: 22.3193, lon: 114.1694 },
+            { name: "Seoul, South Korea", lat: 37.5665, lon: 126.9780 },
+            { name: "Singapore", lat: 1.3521, lon: 103.8198 },
+            { name: "Bangkok, Thailand", lat: 13.7563, lon: 100.5018 },
+            { name: "Mumbai, India", lat: 19.0760, lon: 72.8777 },
+            { name: "Delhi, India", lat: 28.7041, lon: 77.1025 },
+            { name: "Bangalore, India", lat: 12.9716, lon: 77.5946 },
+            { name: "Dubai, UAE", lat: 25.2048, lon: 55.2708 },
+            { name: "Tel Aviv, Israel", lat: 32.0853, lon: 34.7818 },
+            { name: "Jakarta, Indonesia", lat: -6.2088, lon: 106.8456 },
+            { name: "Manila, Philippines", lat: 14.5995, lon: 120.9842 },
+            { name: "Kuala Lumpur, Malaysia", lat: 3.1390, lon: 101.6869 },
+            { name: "Ho Chi Minh City, Vietnam", lat: 10.8231, lon: 106.6297 },
+            { name: "Taipei, Taiwan", lat: 25.0330, lon: 121.5654 },
+
+            // Africa
+            { name: "Cairo, Egypt", lat: 30.0444, lon: 31.2357 },
+            { name: "Lagos, Nigeria", lat: 6.5244, lon: 3.3792 },
+            { name: "Johannesburg, South Africa", lat: -26.2041, lon: 28.0473 },
+            { name: "Cape Town, South Africa", lat: -33.9249, lon: 18.4241 },
+            { name: "Nairobi, Kenya", lat: -1.2921, lon: 36.8219 },
+            { name: "Casablanca, Morocco", lat: 33.5731, lon: -7.5898 },
+            { name: "Addis Ababa, Ethiopia", lat: 9.0320, lon: 38.7469 },
+            { name: "Accra, Ghana", lat: 5.6037, lon: -0.1870 },
+
+            // Oceania
+            { name: "Sydney, Australia", lat: -33.8688, lon: 151.2093 },
+            { name: "Melbourne, Australia", lat: -37.8136, lon: 144.9631 },
+            { name: "Brisbane, Australia", lat: -27.4698, lon: 153.0251 },
+            { name: "Perth, Australia", lat: -31.9505, lon: 115.8605 },
+            { name: "Auckland, New Zealand", lat: -36.8485, lon: 174.7633 },
+            { name: "Wellington, New Zealand", lat: -41.2865, lon: 174.7762 },
+
+            // Additional Major Cities
+            { name: "Karachi, Pakistan", lat: 24.8607, lon: 67.0011 },
+            { name: "Dhaka, Bangladesh", lat: 23.8103, lon: 90.4125 },
+            { name: "Kolkata, India", lat: 22.5726, lon: 88.3639 },
+            { name: "Tehran, Iran", lat: 35.6892, lon: 51.3890 },
+            { name: "Riyadh, Saudi Arabia", lat: 24.7136, lon: 46.6753 },
+            { name: "Baghdad, Iraq", lat: 33.3152, lon: 44.3661 },
+            { name: "Ankara, Turkey", lat: 39.9334, lon: 32.8597 },
+            { name: "Kyiv, Ukraine", lat: 50.4501, lon: 30.5234 },
+            { name: "Bucharest, Romania", lat: 44.4268, lon: 26.1025 },
+            { name: "Budapest, Hungary", lat: 47.4979, lon: 19.0402 },
+            { name: "Montreal, Canada", lat: 45.5017, lon: -73.5673 },
+            { name: "Boston, USA", lat: 42.3601, lon: -71.0589 },
+            { name: "Denver, USA", lat: 39.7392, lon: -104.9903 },
+            { name: "Atlanta, USA", lat: 33.7490, lon: -84.3880 },
+            { name: "Phoenix, USA", lat: 33.4484, lon: -112.0740 },
+            { name: "Philadelphia, USA", lat: 39.9526, lon: -75.1652 },
+            { name: "San Diego, USA", lat: 32.7157, lon: -117.1611 },
+            { name: "Dallas, USA", lat: 32.7767, lon: -96.7970 },
+            { name: "Las Vegas, USA", lat: 36.1699, lon: -115.1398 },
+            { name: "Honolulu, USA", lat: 21.3099, lon: -157.8581 },
+            { name: "Anchorage, USA", lat: 61.2181, lon: -149.9003 },
+            { name: "Quito, Ecuador", lat: -0.1807, lon: -78.4678 },
+            { name: "La Paz, Bolivia", lat: -16.5000, lon: -68.1500 },
+            { name: "Montevideo, Uruguay", lat: -34.9011, lon: -56.1645 },
+            { name: "Havana, Cuba", lat: 23.1136, lon: -82.3666 },
+            { name: "Panama City, Panama", lat: 8.9824, lon: -79.5199 },
+            { name: "San José, Costa Rica", lat: 9.9281, lon: -84.0907 },
+        ];
+
+        // Sort cities alphabetically
+        cities.sort((a, b) => a.name.localeCompare(b.name));
 
         // Request user's location on page load
         window.addEventListener('load', () => {
             initGraph();
+            populateCityDropdown();
             requestLocation();
         });
+
+        // Populate city dropdown
+        function populateCityDropdown() {
+            const select = document.getElementById('citySelect');
+            cities.forEach((city, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = city.name;
+                select.appendChild(option);
+            });
+        }
 
         // Initialize graph canvas
         function initGraph() {
@@ -541,38 +814,58 @@
         function generateDailyData() {
             if (!userLat || !userLon) return [];
 
-            const data = [];
             const now = new Date();
             const dayOfYear = getDayOfYear(now);
             const earthSunDist = calculateEarthSunDistance(dayOfYear);
 
-            // Calculate distance for each hour of the day
-            for (let hour = 0; hour < 24; hour++) {
-                const testTime = new Date(now);
-                testTime.setHours(hour, 0, 0, 0);
-                const distance = calculateUserDistanceFromSun(userLat, userLon, testTime, earthSunDist);
-                data.push({ x: hour, y: distance, label: hour + ':00' });
-            }
+            // Create array of all locations (user + comparisons)
+            const allLocations = [
+                { lat: userLat, lon: userLon, label: 'Your Location', color: colorPalette[0] },
+                ...comparisonLocations
+            ];
 
-            return data;
+            // Generate data for each location
+            const series = allLocations.map(location => {
+                const data = [];
+                for (let hour = 0; hour < 24; hour++) {
+                    const testTime = new Date(now);
+                    testTime.setHours(hour, 0, 0, 0);
+                    const distance = calculateUserDistanceFromSun(location.lat, location.lon, testTime, earthSunDist);
+                    data.push({ x: hour, y: distance, label: hour + ':00' });
+                }
+                return {
+                    location: location,
+                    data: data
+                };
+            });
+
+            return series;
         }
 
         // Generate yearly view data (365 days)
         function generateYearlyData() {
-            const data = [];
+            if (!userLat || !userLon) return [];
+
             const now = new Date();
             const currentYear = now.getFullYear();
 
-            // Calculate distance for each month (12 data points)
+            // For yearly view, only show user location since orbital distance is the same
+            // for all locations on Earth (comparison locations would show identical overlapping lines)
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            const data = [];
             for (let month = 0; month < 12; month++) {
                 const testDate = new Date(currentYear, month, 15); // Mid-month
                 const dayOfYear = getDayOfYear(testDate);
                 const distance = calculateEarthSunDistance(dayOfYear);
-                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 data.push({ x: month, y: distance, label: monthNames[month] });
             }
 
-            return data;
+            // Return single series for user location
+            return [{
+                location: { lat: userLat, lon: userLon, label: 'Your Location', color: colorPalette[0] },
+                data: data
+            }];
         }
 
         // Draw the graph
@@ -586,10 +879,13 @@
             const graphWidth = canvas.width - 2 * padding;
             const graphHeight = canvas.height - 2 * padding;
 
-            // Find min and max values
-            const distances = graphData.map(d => d.y);
-            const minDist = Math.min(...distances);
-            const maxDist = Math.max(...distances);
+            // Find min and max values across all series
+            let allDistances = [];
+            graphData.forEach(series => {
+                allDistances = allDistances.concat(series.data.map(d => d.y));
+            });
+            const minDist = Math.min(...allDistances);
+            const maxDist = Math.max(...allDistances);
             const distRange = maxDist - minDist;
 
             // Draw axes
@@ -623,60 +919,72 @@
                 ctx.fillText(label, padding - 10, y + 4);
             }
 
-            // Draw X-axis labels
-            ctx.textAlign = 'center';
-            const step = currentGraphView === 'daily' ? 4 : 2; // Every 4 hours or every 2 months
-            for (let i = 0; i < graphData.length; i += step) {
-                const x = padding + (graphWidth * i / (graphData.length - 1));
-                ctx.fillText(graphData[i].label, x, canvas.height - padding + 20);
-            }
-
-            // Draw curve
-            ctx.strokeStyle = '#4ade80';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            for (let i = 0; i < graphData.length; i++) {
-                const x = padding + (graphWidth * i / (graphData.length - 1));
-                const y = canvas.height - padding - ((graphData[i].y - minDist) / distRange * graphHeight);
-
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
+            // Draw X-axis labels (using first series for labels)
+            if (graphData[0] && graphData[0].data.length > 0) {
+                ctx.textAlign = 'center';
+                const step = currentGraphView === 'daily' ? 4 : 2; // Every 4 hours or every 2 months
+                for (let i = 0; i < graphData[0].data.length; i += step) {
+                    const x = padding + (graphWidth * i / (graphData[0].data.length - 1));
+                    ctx.fillText(graphData[0].data[i].label, x, canvas.height - padding + 20);
                 }
             }
-            ctx.stroke();
 
-            // Draw current position marker
-            drawCurrentPositionMarker(minDist, maxDist, distRange, graphWidth, graphHeight, padding);
+            // Draw curves for each series
+            graphData.forEach(series => {
+                ctx.strokeStyle = series.location.color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                for (let i = 0; i < series.data.length; i++) {
+                    const x = padding + (graphWidth * i / (series.data.length - 1));
+                    const y = canvas.height - padding - ((series.data[i].y - minDist) / distRange * graphHeight);
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+            });
+
+            // Draw current position marker (only for user location - first series)
+            if (graphData.length > 0) {
+                drawCurrentPositionMarker(minDist, maxDist, distRange, graphWidth, graphHeight, padding);
+            }
+
+            // Update legend
+            updateLegend();
         }
 
         // Draw current position marker on graph
         function drawCurrentPositionMarker(minDist, maxDist, distRange, graphWidth, graphHeight, padding) {
+            if (!graphData[0] || !graphData[0].data) return;
+
             const now = new Date();
+            const userSeries = graphData[0].data;
             let currentIndex = 0;
 
             if (currentGraphView === 'daily') {
                 // Current hour
                 const currentHour = now.getHours() + now.getMinutes() / 60;
-                currentIndex = currentHour / 24 * (graphData.length - 1);
+                currentIndex = currentHour / 24 * (userSeries.length - 1);
             } else {
                 // Current month
                 const currentMonth = now.getMonth() + now.getDate() / 31;
-                currentIndex = currentMonth / 12 * (graphData.length - 1);
+                currentIndex = currentMonth / 12 * (userSeries.length - 1);
             }
 
             // Interpolate Y value
             const idx = Math.floor(currentIndex);
             const fraction = currentIndex - idx;
             let yValue;
-            if (idx >= graphData.length - 1) {
-                yValue = graphData[graphData.length - 1].y;
+            if (idx >= userSeries.length - 1) {
+                yValue = userSeries[userSeries.length - 1].y;
             } else {
-                yValue = graphData[idx].y + (graphData[idx + 1].y - graphData[idx].y) * fraction;
+                yValue = userSeries[idx].y + (userSeries[idx + 1].y - userSeries[idx].y) * fraction;
             }
 
-            const x = padding + (graphWidth * currentIndex / (graphData.length - 1));
+            const x = padding + (graphWidth * currentIndex / (userSeries.length - 1));
             const y = canvas.height - padding - ((yValue - minDist) / distRange * graphHeight);
 
             // Draw marker
@@ -735,6 +1043,7 @@
 
             document.getElementById('status').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('comparisonSection').style.display = 'block';
 
             // Initialize graph with daily view
             graphData = generateDailyData();
@@ -789,12 +1098,6 @@
             const distanceMiles = userDistanceKm * 0.621371;
             document.getElementById('distanceMiles').textContent =
                 distanceMiles.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' miles';
-
-            document.getElementById('earthSunDist').textContent =
-                (earthSunDistanceKm / 1000000).toFixed(2) + ' M km';
-
-            const position = isUserFacingSun(userLat, userLon, now) ? '☀️ Day' : '🌙 Night';
-            document.getElementById('userPosition').textContent = position;
 
             document.getElementById('localTime').textContent =
                 now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -932,6 +1235,107 @@
                 closeModal();
             }
         });
+
+        // Update legend display
+        function updateLegend() {
+            const legendContainer = document.getElementById('graphLegend');
+
+            if (graphData.length === 0) {
+                legendContainer.innerHTML = '';
+                return;
+            }
+
+            legendContainer.innerHTML = graphData.map(series => `
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: ${series.location.color}"></div>
+                    <span>${series.location.label}</span>
+                </div>
+            `).join('');
+        }
+
+        // Add comparison location
+        function addComparisonLocation() {
+            const select = document.getElementById('citySelect');
+            const selectedIndex = select.value;
+
+            // Validation
+            if (selectedIndex === '') {
+                alert('Please select a city from the dropdown');
+                return;
+            }
+
+            if (comparisonLocations.length >= MAX_LOCATIONS) {
+                alert(`Maximum ${MAX_LOCATIONS} comparison locations allowed`);
+                return;
+            }
+
+            const selectedCity = cities[parseInt(selectedIndex)];
+
+            // Check if city is already added
+            const alreadyAdded = comparisonLocations.some(loc =>
+                loc.lat === selectedCity.lat && loc.lon === selectedCity.lon
+            );
+
+            if (alreadyAdded) {
+                alert('This city has already been added');
+                return;
+            }
+
+            // Create location object
+            const location = {
+                lat: selectedCity.lat,
+                lon: selectedCity.lon,
+                label: selectedCity.name,
+                color: colorPalette[comparisonLocations.length + 1] // +1 because user location uses first color
+            };
+
+            comparisonLocations.push(location);
+
+            // Reset dropdown
+            select.value = '';
+
+            // Update display
+            updateComparisonLocationsDisplay();
+            updateGraphData();
+        }
+
+        // Remove comparison location
+        function removeComparisonLocation(index) {
+            comparisonLocations.splice(index, 1);
+            // Reassign colors
+            comparisonLocations.forEach((loc, i) => {
+                loc.color = colorPalette[i + 1];
+            });
+            updateComparisonLocationsDisplay();
+            updateGraphData();
+        }
+
+        // Update comparison locations display
+        function updateComparisonLocationsDisplay() {
+            const container = document.getElementById('comparisonLocations');
+
+            if (comparisonLocations.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = comparisonLocations.map((loc, index) => `
+                <div class="location-item" style="border-left-color: ${loc.color}">
+                    <span class="location-label">${loc.label}</span>
+                    <button class="remove-btn" onclick="removeComparisonLocation(${index})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        // Update graph data with all locations
+        function updateGraphData() {
+            if (currentGraphView === 'daily') {
+                graphData = generateDailyData();
+            } else {
+                graphData = generateYearlyData();
+            }
+            drawGraph();
+        }
     </script>
 </body>
 </html>
