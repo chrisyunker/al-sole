@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Distance to the Sun - Al Sole</title>
+    <title>Al Sole</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <style>
         * {
@@ -497,7 +497,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🌍 Distance to the Sun ☀️</h1>
+        <h1>Al Sole</h1>
 
         <div class="graph-container">
             <div class="graph-toggle-buttons">
@@ -1106,7 +1106,7 @@
             document.getElementById('solarNoon').textContent = solarNoonOffset;
 
             document.getElementById('coordinates').textContent =
-                `📍 $${userLat.toFixed(4)}°, $${userLon.toFixed(4)}°`;
+                `📍 ${userLat.toFixed(4)}°, ${userLon.toFixed(4)}°`;
 
             // Update graph with current position
             if (graphData.length > 0) {
@@ -1209,8 +1209,8 @@
                 return 'At solar noon';
             }
 
-            const timeStr = hrs > 0 ? `$${hrs}h $${mins}m` : `$${mins}m`;
-            return offset > 0 ? `+$${timeStr}` : `-$${timeStr}`;
+            const timeStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+            return offset > 0 ? `+${timeStr}` : `-${timeStr}`;
         }
 
         // Modal functions

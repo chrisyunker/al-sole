@@ -1,44 +1,29 @@
-# Update Documentation for index.html.tpl Removal
+# Change Website Name to "Al Sole"
 
 ## Context
-The project previously used `website/index.html.tpl` as a template file that was processed to generate `index.html`. This has been simplified - the template has been removed and now we just use `index.html` directly.
+Update the website branding to use "Al Sole" as the primary name. Currently the title includes "Distance to the Sun" prefix.
 
 ## Plan
 
 ### Tasks
-- [x] Update README.md file structure section (line 122)
-- [x] Update DEPLOYMENT.md manual S3 upload command (line 132)
-- [x] Update SPECIFICATION.md file structure section (line 214)
-- [x] Remove scripts/build-local.sh (no longer needed)
-- [x] Verify terraform configuration is already correct (confirmed)
+- [x] Update the HTML `<title>` tag from "Distance to the Sun - Al Sole" to "Al Sole"
+- [x] Update the main H1 heading (currently "🌍 Distance to the Sun ☀️") to "Al Sole"
 
 ---
 
 ## Implementation Details
 
 ### Files to Update
-1. **README.md** - File structure diagram
-   - Change: `index.html.tpl` → `index.html`
-   - Remove template description
+1. **website/index.html** - Line 6: Update title tag
+2. **website/index.html** - Line 500: Update H1 heading
 
-2. **DEPLOYMENT.md** - Manual S3 upload example
-   - Change: `../website/index.html.tpl` → `../website/index.html`
-   - Update description text
-
-3. **SPECIFICATION.md** - File structure and description
-   - Change: `index.html.tpl` → `index.html`
-   - Update description text
-
-4. **scripts/build-local.sh** - Build script
-   - This script processes the .tpl file which no longer exists
-   - Options: Remove entirely or update to just copy index.html
-   - Need user decision on this
+### User Decision
+- H1 heading changed to "Al Sole" (simple text, no emojis)
 
 ### Keeping It Simple
-- Simple find-and-replace operations
-- Update descriptions to reflect direct HTML usage
-- No complex restructuring needed
-- Verify terraform already uses correct paths
+- Simple text replacements in the HTML file
+- Minimal changes to maintain functionality
+- Clean branding update
 
 ---
 
@@ -46,43 +31,67 @@ The project previously used `website/index.html.tpl` as a template file that was
 
 ### Implementation Complete ✅
 
-All documentation has been successfully updated to reflect the removal of `index.html.tpl` in favor of using `index.html` directly.
+All website name changes have been successfully applied.
 
 ### Changes Made
 
-**File Removed**: `scripts/build-local.sh`
-- This script was used to process the `.tpl` template file
-- No longer needed since we now use `index.html` directly
-- Simplifies the project structure
+**website/index.html** (line 6):
+- Changed: `<title>Distance to the Sun - Al Sole</title>`
+- To: `<title>Al Sole</title>`
 
-**Documentation Updates**:
-
-1. **README.md** (line 122):
-   - Changed: `index.html.tpl   # Website template with Google Analytics`
-   - To: `index.html       # Main website file`
-
-2. **DEPLOYMENT.md** (line 132):
-   - Changed: `aws s3 cp ../website/index.html.tpl`
-   - To: `aws s3 cp ../website/index.html`
-   - Manual S3 upload command now references correct file
-
-3. **SPECIFICATION.md** (line 214):
-   - Changed: `index.html.tpl   # Website template with Google Analytics`
-   - To: `index.html       # Main website file`
-   - Removed reference to `scripts/deploy.sh` from file structure (doesn't exist)
+**website/index.html** (line 500):
+- Changed: `<h1>🌍 Distance to the Sun ☀️</h1>`
+- To: `<h1>Al Sole</h1>`
 
 ### Impact
 
-- All documentation now accurately reflects the current project structure
-- Removed outdated build script that would have failed since `.tpl` file no longer exists
-- Simplified deployment process - no template processing needed
-- Terraform configuration already uses `index.html` directly (no changes needed)
+- Website now displays "Al Sole" as the primary branding
+- Browser tab title shows "Al Sole"
+- Main heading simplified to clean text without emojis
+- No functional changes, only branding/naming updates
 
 ### Files Modified
-- `/Users/cyunker/git/github.com/chrisyunker/al-sole/README.md`
-- `/Users/cyunker/git/github.com/chrisyunker/al-sole/DEPLOYMENT.md`
-- `/Users/cyunker/git/github.com/chrisyunker/al-sole/SPECIFICATION.md`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
 - `/Users/cyunker/git/github.com/chrisyunker/al-sole/tasks/todo.md` (this file)
 
-### Files Deleted
-- `/Users/cyunker/git/github.com/chrisyunker/al-sole/scripts/build-local.sh`
+---
+
+# Fix Terraform aws_s3_object.index_html Bug
+
+## Context
+The aws_s3_object.index_html resource in terraform/main.tf was not properly uploading the index.html file to S3. It was using `content` attribute with a file path string instead of file contents, and using `md5()` instead of `filemd5()`.
+
+## Plan
+
+### Tasks
+- [x] Fix aws_s3_object.index_html to use `source` instead of `content`
+- [x] Fix etag to use `filemd5()` instead of `md5()`
+
+---
+
+## Review
+
+### Implementation Complete ✅
+
+The terraform configuration has been fixed to properly upload index.html to S3.
+
+### Changes Made
+
+**terraform/main.tf** (lines 165-174):
+- Changed: `content = "${path.root}/../website/index.html"` (was setting content to path string)
+- To: `source = "${path.root}/../website/index.html"` (now properly reads file)
+
+- Changed: `etag = md5("${path.root}/../website/index.html")` (was hashing path string)
+- To: `etag = filemd5("${path.root}/../website/index.html")` (now properly hashes file contents)
+
+### Impact
+
+- The index.html file will now be properly uploaded to S3 with correct content
+- The etag will correctly track file changes for cache invalidation
+- Terraform will properly detect when the file has changed and needs re-uploading
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/terraform/main.tf`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/tasks/todo.md` (this file)
+
+---

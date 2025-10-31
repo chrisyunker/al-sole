@@ -162,14 +162,13 @@ resource "cloudflare_dns_record" "website-a" {
   ttl     = 60
 }
 
-# Process index.html template with Google Analytics
 resource "aws_s3_object" "index_html" {
   bucket = module.s3_bucket.bucket_name
   key    = "index.html"
 
-  content = "${path.root}/../website/index.html"
+  source = "${path.root}/../website/index.html"
   content_type = "text/html"
-  etag         = md5("${path.root}/../website/index.html")
+  etag         = filemd5("${path.root}/../website/index.html")
 
   depends_on = [module.s3_bucket]
 }
