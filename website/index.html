@@ -499,42 +499,47 @@
     <div class="container">
         <h1>Al Sole</h1>
 
-        <div class="graph-container">
-            <div class="graph-toggle-buttons">
-                <button class="toggle-btn active" id="dailyViewBtn" onclick="setGraphView('daily')">24 Hours</button>
-                <button class="toggle-btn" id="yearlyViewBtn" onclick="setGraphView('yearly')">1 Year</button>
-            </div>
-            <div id="graphLegend" class="graph-legend"></div>
-            <canvas id="distanceGraph" width="600" height="340"></canvas>
-        </div>
-
-        <div class="comparison-section" id="comparisonSection" style="display: none;">
-            <h3>Compare Locations</h3>
-            <div class="input-row">
-                <div class="input-field" style="flex: 2;">
-                    <label>Select a City</label>
-                    <select id="citySelect">
-                        <option value="">Choose a city...</option>
-                    </select>
-                </div>
-            </div>
-            <button class="add-location-btn" onclick="addComparisonLocation()">Add Location</button>
-            <div id="comparisonLocations" class="comparison-locations"></div>
-        </div>
-
         <div id="status" class="status loading">
             Requesting location access...
         </div>
 
         <div id="mainContent" style="display: none;">
             <div class="distance-display">
-                <div class="distance-unit">You are</div>
-                <div class="distance-value" id="distanceKm">-</div>
-                <div class="distance-unit">kilometers from the Sun</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div class="distance-unit">You are</div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="toggle-btn active" id="kmBtn" onclick="setUnit('km')">Kilometers</button>
+                        <button class="toggle-btn" id="milesBtn" onclick="setUnit('miles')">Miles</button>
+                    </div>
+                </div>
+                <div class="distance-value" id="distanceValue">-</div>
+                <div class="distance-unit" id="distanceUnitLabel">kilometers from the Sun</div>
                 <div style="margin-top: 10px;">
-                    <span id="distanceMiles" style="font-size: 1.1em;">-</span>
                     <span class="update-indicator"></span>
                 </div>
+            </div>
+
+            <div class="graph-container">
+                <div class="graph-toggle-buttons">
+                    <button class="toggle-btn active" id="dailyViewBtn" onclick="setGraphView('daily')">24 Hours</button>
+                    <button class="toggle-btn" id="yearlyViewBtn" onclick="setGraphView('yearly')">1 Year</button>
+                </div>
+                <div id="graphLegend" class="graph-legend"></div>
+                <canvas id="distanceGraph" width="600" height="340"></canvas>
+            </div>
+
+            <div class="comparison-section" id="comparisonSection">
+                <h3>Compare Locations</h3>
+                <div class="input-row">
+                    <div class="input-field" style="flex: 2;">
+                        <label>Select a City</label>
+                        <select id="citySelect">
+                            <option value="">Choose a city...</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="add-location-btn" onclick="addComparisonLocation()">Add Location</button>
+                <div id="comparisonLocations" class="comparison-locations"></div>
             </div>
 
             <div class="info-grid">
@@ -658,6 +663,7 @@
         let userLon = null;
         let updateInterval = null;
         let currentGraphView = 'daily'; // 'daily' or 'yearly'
+        let currentUnit = 'km'; // 'km' or 'miles'
         let graphData = [];
         let canvas = null;
         let ctx = null;
@@ -784,6 +790,13 @@
         window.addEventListener('load', () => {
             initGraph();
             populateCityDropdown();
+
+            // Load saved unit preference from localStorage
+            const savedUnit = localStorage.getItem('preferredUnit');
+            if (savedUnit === 'miles') {
+                setUnit('miles');
+            }
+
             requestLocation();
         });
 
@@ -875,15 +888,23 @@
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const padding = 50;
-            const graphWidth = canvas.width - 2 * padding;
-            const graphHeight = canvas.height - 2 * padding;
+            const paddingLeft = 80;
+            const paddingRight = 50;
+            const paddingTop = 50;
+            const paddingBottom = 50;
+            const graphWidth = canvas.width - paddingLeft - paddingRight;
+            const graphHeight = canvas.height - paddingTop - paddingBottom;
 
             // Find min and max values across all series
             let allDistances = [];
             graphData.forEach(series => {
                 allDistances = allDistances.concat(series.data.map(d => d.y));
             });
+
+            // Convert to miles if needed
+            const conversionFactor = currentUnit === 'miles' ? 0.621371 : 1;
+            allDistances = allDistances.map(d => d * conversionFactor);
+
             const minDist = Math.min(...allDistances);
             const maxDist = Math.max(...allDistances);
             const distRange = maxDist - minDist;
@@ -892,19 +913,19 @@
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(padding, padding);
-            ctx.lineTo(padding, canvas.height - padding);
-            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.moveTo(paddingLeft, paddingTop);
+            ctx.lineTo(paddingLeft, canvas.height - paddingBottom);
+            ctx.lineTo(canvas.width - paddingRight, canvas.height - paddingBottom);
             ctx.stroke();
 
             // Draw grid lines
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
             ctx.lineWidth = 1;
             for (let i = 0; i <= 5; i++) {
-                const y = padding + (graphHeight * i / 5);
+                const y = paddingTop + (graphHeight * i / 5);
                 ctx.beginPath();
-                ctx.moveTo(padding, y);
-                ctx.lineTo(canvas.width - padding, y);
+                ctx.moveTo(paddingLeft, y);
+                ctx.lineTo(canvas.width - paddingRight, y);
                 ctx.stroke();
             }
 
@@ -912,11 +933,12 @@
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.font = '12px sans-serif';
             ctx.textAlign = 'right';
+            const unitSuffix = currentUnit === 'miles' ? 'M mi' : 'M km';
             for (let i = 0; i <= 5; i++) {
-                const y = padding + (graphHeight * i / 5);
+                const y = paddingTop + (graphHeight * i / 5);
                 const value = maxDist - (distRange * i / 5);
-                const label = (value / 1000000).toFixed(2) + 'M';
-                ctx.fillText(label, padding - 10, y + 4);
+                const label = (value / 1000000).toFixed(2) + unitSuffix;
+                ctx.fillText(label, paddingLeft - 10, y + 4);
             }
 
             // Draw X-axis labels (using first series for labels)
@@ -924,8 +946,8 @@
                 ctx.textAlign = 'center';
                 const step = currentGraphView === 'daily' ? 4 : 2; // Every 4 hours or every 2 months
                 for (let i = 0; i < graphData[0].data.length; i += step) {
-                    const x = padding + (graphWidth * i / (graphData[0].data.length - 1));
-                    ctx.fillText(graphData[0].data[i].label, x, canvas.height - padding + 20);
+                    const x = paddingLeft + (graphWidth * i / (graphData[0].data.length - 1));
+                    ctx.fillText(graphData[0].data[i].label, x, canvas.height - paddingBottom + 20);
                 }
             }
 
@@ -935,8 +957,9 @@
                 ctx.lineWidth = 3;
                 ctx.beginPath();
                 for (let i = 0; i < series.data.length; i++) {
-                    const x = padding + (graphWidth * i / (series.data.length - 1));
-                    const y = canvas.height - padding - ((series.data[i].y - minDist) / distRange * graphHeight);
+                    const x = paddingLeft + (graphWidth * i / (series.data.length - 1));
+                    const convertedY = series.data[i].y * conversionFactor;
+                    const y = canvas.height - paddingBottom - ((convertedY - minDist) / distRange * graphHeight);
 
                     if (i === 0) {
                         ctx.moveTo(x, y);
@@ -949,7 +972,7 @@
 
             // Draw current position marker (only for user location - first series)
             if (graphData.length > 0) {
-                drawCurrentPositionMarker(minDist, maxDist, distRange, graphWidth, graphHeight, padding);
+                drawCurrentPositionMarker(minDist, maxDist, distRange, graphWidth, graphHeight, paddingLeft, paddingBottom, conversionFactor);
             }
 
             // Update legend
@@ -957,7 +980,7 @@
         }
 
         // Draw current position marker on graph
-        function drawCurrentPositionMarker(minDist, maxDist, distRange, graphWidth, graphHeight, padding) {
+        function drawCurrentPositionMarker(minDist, maxDist, distRange, graphWidth, graphHeight, paddingLeft, paddingBottom, conversionFactor) {
             if (!graphData[0] || !graphData[0].data) return;
 
             const now = new Date();
@@ -984,8 +1007,11 @@
                 yValue = userSeries[idx].y + (userSeries[idx + 1].y - userSeries[idx].y) * fraction;
             }
 
-            const x = padding + (graphWidth * currentIndex / (userSeries.length - 1));
-            const y = canvas.height - padding - ((yValue - minDist) / distRange * graphHeight);
+            // Convert to miles if needed
+            yValue = yValue * conversionFactor;
+
+            const x = paddingLeft + (graphWidth * currentIndex / (userSeries.length - 1));
+            const y = canvas.height - paddingBottom - ((yValue - minDist) / distRange * graphHeight);
 
             // Draw marker
             ctx.fillStyle = '#fbbf24';
@@ -1020,6 +1046,32 @@
             drawGraph();
         }
 
+        // Set distance unit (km or miles)
+        function setUnit(unit) {
+            currentUnit = unit;
+
+            // Update button states
+            document.getElementById('kmBtn').classList.remove('active');
+            document.getElementById('milesBtn').classList.remove('active');
+
+            if (unit === 'km') {
+                document.getElementById('kmBtn').classList.add('active');
+            } else {
+                document.getElementById('milesBtn').classList.add('active');
+            }
+
+            // Save preference to localStorage
+            localStorage.setItem('preferredUnit', unit);
+
+            // Immediately update the display
+            updateDistance();
+
+            // Redraw graph with new units
+            if (graphData.length > 0) {
+                drawGraph();
+            }
+        }
+
         function requestLocation() {
             const statusEl = document.getElementById('status');
             statusEl.className = 'status loading';
@@ -1043,7 +1095,6 @@
 
             document.getElementById('status').style.display = 'none';
             document.getElementById('mainContent').style.display = 'block';
-            document.getElementById('comparisonSection').style.display = 'block';
 
             // Initialize graph with daily view
             graphData = generateDailyData();
@@ -1091,13 +1142,19 @@
                 earthSunDistanceKm
             );
 
-            // Update display
-            document.getElementById('distanceKm').textContent =
-                userDistanceKm.toLocaleString('en-US', { maximumFractionDigits: 0 });
+            // Update display based on selected unit
+            let displayValue, unitLabel;
+            if (currentUnit === 'km') {
+                displayValue = userDistanceKm.toLocaleString('en-US', { maximumFractionDigits: 0 });
+                unitLabel = 'kilometers from the Sun';
+            } else {
+                const distanceMiles = userDistanceKm * 0.621371;
+                displayValue = distanceMiles.toLocaleString('en-US', { maximumFractionDigits: 0 });
+                unitLabel = 'miles from the Sun';
+            }
 
-            const distanceMiles = userDistanceKm * 0.621371;
-            document.getElementById('distanceMiles').textContent =
-                distanceMiles.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' miles';
+            document.getElementById('distanceValue').textContent = displayValue;
+            document.getElementById('distanceUnitLabel').textContent = unitLabel;
 
             document.getElementById('localTime').textContent =
                 now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });

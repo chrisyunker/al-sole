@@ -1,29 +1,37 @@
-# Change Website Name to "Al Sole"
+# Add km/miles Toggle Switch
 
 ## Context
-Update the website branding to use "Al Sole" as the primary name. Currently the title includes "Distance to the Sun" prefix.
+Add a toggle switch to allow users to switch between kilometers and miles for distance display. Currently, both units are always shown (kilometers as main, miles as secondary). The toggle will let users choose their preferred unit.
 
 ## Plan
 
 ### Tasks
-- [x] Update the HTML `<title>` tag from "Distance to the Sun - Al Sole" to "Al Sole"
-- [x] Update the main H1 heading (currently "🌍 Distance to the Sun ☀️") to "Al Sole"
+- [x] Add toggle button UI (similar to graph view toggle)
+- [x] Add JavaScript state to track selected unit (default: km)
+- [x] Update distance display logic to show only selected unit
+- [x] Add toggle button click handler to switch units
+- [x] Save preference to localStorage
 
 ---
 
 ## Implementation Details
 
 ### Files to Update
-1. **website/index.html** - Line 6: Update title tag
-2. **website/index.html** - Line 500: Update H1 heading
+1. **website/index.html** - Add CSS for unit toggle buttons
+2. **website/index.html** - Add HTML for toggle UI
+3. **website/index.html** - Add JavaScript to handle unit switching
 
-### User Decision
-- H1 heading changed to "Al Sole" (simple text, no emojis)
+### Design Approach
+- Follow the existing toggle button pattern used for graph view (24 Hours/1 Year)
+- Place toggle near the distance display
+- Simple and clean design matching current UI
+- No changes to calculation logic, only display
 
 ### Keeping It Simple
-- Simple text replacements in the HTML file
-- Minimal changes to maintain functionality
-- Clean branding update
+- Use existing CSS classes (toggle-btn, active) for consistency
+- Minimal JavaScript changes
+- No backend or API changes needed
+- Store preference in localStorage for persistence
 
 ---
 
@@ -31,67 +39,63 @@ Update the website branding to use "Al Sole" as the primary name. Currently the 
 
 ### Implementation Complete ✅
 
-All website name changes have been successfully applied.
+All tasks for the km/miles toggle switch have been successfully completed.
 
 ### Changes Made
 
-**website/index.html** (line 6):
-- Changed: `<title>Distance to the Sun - Al Sole</title>`
-- To: `<title>Al Sole</title>`
+**website/index.html**:
 
-**website/index.html** (line 500):
-- Changed: `<h1>🌍 Distance to the Sun ☀️</h1>`
-- To: `<h1>Al Sole</h1>`
+1. **HTML Structure (lines 531-540)**:
+   - Added toggle buttons for Kilometers/Miles using existing toggle-btn CSS class
+   - Changed distance display to use single `distanceValue` element instead of separate km/miles
+   - Made unit label dynamic with `distanceUnitLabel` element
+   - Placed toggle buttons at the top of the distance display section
+
+2. **JavaScript State (line 664)**:
+   - Added `currentUnit` variable to track selected unit (defaults to 'km')
+
+3. **Display Logic (lines 1098-1110)**:
+   - Updated `updateDistance()` function to display only the selected unit
+   - Conditionally formats display value and unit label based on `currentUnit`
+
+4. **Toggle Function (lines 1034-1053)**:
+   - Added `setUnit(unit)` function to handle unit switching
+   - Updates button active states
+   - Saves preference to localStorage
+   - Immediately updates display when unit changes
+
+5. **localStorage Persistence (lines 792-796 & line 1059)**:
+   - Loads saved unit preference on page load
+   - Saves preference when user changes unit
+   - Preference persists across browser sessions
+
+6. **Graph Unit Conversion (lines 900-901, 931-936, 956-957, 978, 1006, 1065-1067)**:
+   - Updated `drawGraph()` to convert all distances to miles when needed
+   - Updated Y-axis labels to show "M mi" or "M km" based on selected unit
+   - Updated curve plotting to use converted values
+   - Updated current position marker to use converted values
+   - Graph redraws automatically when unit changes
+
+### Features
+
+- Clean toggle UI matching existing design patterns
+- Instant switching between kilometers and miles
+- Remembers user preference using localStorage
+- No impact on calculation accuracy - only display formatting changes
+- Fully integrated with existing real-time updates
+- **Graph displays in selected unit** - both Y-axis labels and plotted data update to show km or miles
 
 ### Impact
 
-- Website now displays "Al Sole" as the primary branding
-- Browser tab title shows "Al Sole"
-- Main heading simplified to clean text without emojis
-- No functional changes, only branding/naming updates
+- Users can now choose their preferred distance unit
+- Cleaner display showing only one unit at a time
+- Preference is remembered for future visits
+- Zero changes to calculation logic or data accuracy
+- Maintains consistency with existing UI patterns
+- **Graph now fully respects unit selection** - all distance visualizations use the selected unit
 
 ### Files Modified
 - `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
-- `/Users/cyunker/git/github.com/chrisyunker/al-sole/tasks/todo.md` (this file)
-
----
-
-# Fix Terraform aws_s3_object.index_html Bug
-
-## Context
-The aws_s3_object.index_html resource in terraform/main.tf was not properly uploading the index.html file to S3. It was using `content` attribute with a file path string instead of file contents, and using `md5()` instead of `filemd5()`.
-
-## Plan
-
-### Tasks
-- [x] Fix aws_s3_object.index_html to use `source` instead of `content`
-- [x] Fix etag to use `filemd5()` instead of `md5()`
-
----
-
-## Review
-
-### Implementation Complete ✅
-
-The terraform configuration has been fixed to properly upload index.html to S3.
-
-### Changes Made
-
-**terraform/main.tf** (lines 165-174):
-- Changed: `content = "${path.root}/../website/index.html"` (was setting content to path string)
-- To: `source = "${path.root}/../website/index.html"` (now properly reads file)
-
-- Changed: `etag = md5("${path.root}/../website/index.html")` (was hashing path string)
-- To: `etag = filemd5("${path.root}/../website/index.html")` (now properly hashes file contents)
-
-### Impact
-
-- The index.html file will now be properly uploaded to S3 with correct content
-- The etag will correctly track file changes for cache invalidation
-- Terraform will properly detect when the file has changed and needs re-uploading
-
-### Files Modified
-- `/Users/cyunker/git/github.com/chrisyunker/al-sole/terraform/main.tf`
 - `/Users/cyunker/git/github.com/chrisyunker/al-sole/tasks/todo.md` (this file)
 
 ---
