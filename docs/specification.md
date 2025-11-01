@@ -34,7 +34,21 @@ A real-time web application that calculates and displays the user's distance fro
    - Show live clock
    - Indicate update status visually
 
-4. **Educational Formula Modal**
+4. **Multi-Location Comparison**
+   - Compare distances and solar angles across multiple locations simultaneously
+   - Pre-populated dropdown with cities worldwide
+   - Add/remove comparison locations dynamically
+   - Color-coded visualization in graphs
+   - All locations update in real-time
+
+5. **Solar Elevation Angle Visualization**
+   - Calculate and display sun's angle above/below horizon
+   - Dual-axis graphs showing both distance and elevation
+   - Positive angles = sun above horizon (daytime)
+   - Negative angles = sun below horizon (nighttime)
+   - Horizon reference line at 0°
+
+6. **Educational Formula Modal**
    - Interactive modal displaying all calculation formulas
    - Detailed explanations of astronomical concepts
    - Visual formula breakdowns with color-coded variables
@@ -43,23 +57,36 @@ A real-time web application that calculates and displays the user's distance fro
 
 ### Display Elements
 1. **Primary Display**
-   - Distance in kilometers (main display)
-   - Distance in miles (secondary)
+   - Distance in user-selected unit (kilometers or miles)
+   - Unit toggle buttons for instant switching
    - Visual indicators (sun icon, Earth icon)
+   - Unit preference saved to browser localStorage
 
-2. **Supplementary Information**
-   - Current Earth-Sun distance (center of Earth)
-   - User's position (day/night side)
+2. **Interactive Dual-Axis Graphs**
+   - Single graph displays both distance and elevation angle
+   - Left Y-axis: Distance from Sun (km or miles)
+   - Right Y-axis: Solar elevation angle (degrees)
+   - Solid lines: Distance curves
+   - Dashed lines: Elevation curves
+   - Toggle between 24-hour view and 1-year view
+   - Current time vertical line marker
+   - Yellow position markers on each curve
+   - Color-coded for multiple locations
+   - Real-time updates every 100ms
+
+3. **Supplementary Information**
    - Local time
    - Solar noon offset
    - Geographic coordinates
 
-3. **User Controls**
-   - Button to refresh/update location
+4. **User Controls**
+   - Unit toggle: Switch between kilometers and miles
+   - Graph view toggle: Switch between 24 Hours and 1 Year
+   - Location comparison: Add/remove cities to compare
    - Button to view calculation formulas
    - Status messages for loading/errors
 
-4. **Formula Modal**
+5. **Formula Modal**
    - Full-screen overlay with educational content
    - Sections for each calculation type:
      - Earth-Sun distance calculation
@@ -122,11 +149,64 @@ c) Distance offset:
 - Otherwise: Night (facing away)
 ```
 
+#### 4. Solar Declination
+```
+The Sun's declination angle varies throughout the year due to Earth's axial tilt:
+
+Formula:
+δ = 23.45° × sin(360° × (284 + N) / 365)
+
+Where:
+- δ = solar declination angle
+- N = day of year (1-365)
+- 23.45° = Earth's axial tilt
+- Ranges from -23.45° (winter solstice) to +23.45° (summer solstice)
+```
+
+#### 5. Solar Elevation Angle
+```
+The angle of the Sun above (+) or below (-) the horizon:
+
+Formula:
+sin(α) = sin(φ) × sin(δ) + cos(φ) × cos(δ) × cos(H)
+
+Where:
+- α = solar elevation angle
+- φ = observer's latitude
+- δ = solar declination
+- H = solar hour angle
+- Positive values = Sun above horizon (daytime)
+- Negative values = Sun below horizon (nighttime)
+- 0° = Sun at horizon (sunrise/sunset)
+```
+
 ### Update Strategy
 - Use `setInterval()` at 100ms intervals
 - Recalculate all values on each tick
 - Update DOM elements with new values
+- Redraw graphs with current position markers
 - Use CSS animations for visual feedback
+
+### Graph Rendering Strategy
+- **Canvas-based drawing**: Uses HTML5 Canvas API for custom visualization
+- **Dual Y-axes**: Left axis for distance, right axis for elevation angle
+- **Line styles**: Solid for distance, dashed for elevation
+- **Color coding**: Each location assigned a unique color
+- **Two view modes**:
+  - Daily (24 Hours): Hourly data points for current day
+  - Yearly (1 Year): Monthly data points showing seasonal variation
+- **Current time indicators**:
+  - Vertical line spanning full graph height
+  - Yellow dots on each curve at current position
+  - Semi-transparent styling to avoid obscuring data
+- **Legend management**: Dynamic legend shows all active locations with color keys
+
+### Data Persistence
+- **localStorage**: Saves user preferences across sessions
+  - Selected unit (km or miles)
+  - Automatically loads on page initialization
+- **Session state**: Comparison locations stored in memory during session
+- **No server required**: All data persisted locally in browser
 
 ### Modal Interactions
 - **Formula Modal Display**:
@@ -151,28 +231,45 @@ c) Distance offset:
 
 ### Layout Structure
 ```
-┌─────────────────────────────────┐
-│            Al Sole              │
-├─────────────────────────────────┤
-│                                 │
-│          ☀️ (animated)          │
-│                                 │
-│         You are                 │
-│      149,597,870               │
-│   kilometers from the Sun       │
-│    (93,000,000 miles) ●         │
-│                                 │
-├──────────────┬──────────────────┤
-│ Earth-Sun    │ Your Position    │
-│ 149.6 M km   │ ☀️ Day          │
-├──────────────┼──────────────────┤
-│ Local Time   │ Solar Noon       │
-│ 14:23:45     │ +2h 23m         │
-├──────────────┴──────────────────┤
-│   📍 42.3601°, -71.0589°       │
-├─────────────────────────────────┤
-│      📐 View Formulas           │
-└─────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│              Al Sole                    │
+├─────────────────────────────────────────┤
+│  You are        [km] [miles]            │
+│           149,597,870                   │
+│      kilometers from the Sun            │
+│                ●                        │
+├─────────────────────────────────────────┤
+│ Distance from Sun & Solar Elevation     │
+│                                         │
+│    [24 Hours] [1 Year]                  │
+│                                         │
+│  Legend: 🔴 Your Location               │
+│          🔵 New York   🟢 Tokyo         │
+│          Solid=Distance|Dashed=Elevation│
+│  ┌────────────────────────────────┐    │
+│  │     ┌──────────────────┐       │150M│
+│  │  M  │   /\    /\      │       │    │
+│  │  k  │  /  \  /  \     │ Elev  │ 50°│
+│  │  m  │ /    \/    \    │ (°)   │    │
+│  │     │/            \   │       │  0°│
+│  │     │--------------│--│-------│    │
+│  │     └──────|───────┘   │       │    │
+│  │         0h    12h   24h│       │    │
+│  └────────────────────────────────┘    │
+│         Current time: 14:23 ↑          │
+├─────────────────────────────────────────┤
+│ Compare Locations                       │
+│ [City Dropdown ▼]  [Add Location]      │
+│ 🔵 New York (40.7°, -74.0°)     [×]    │
+│ 🟢 Tokyo (35.7°, 139.7°)        [×]    │
+├────────────┬────────────────────────────┤
+│ Local Time │ Solar Noon Offset         │
+│ 14:23:45   │ +2h 23m                   │
+├────────────┴────────────────────────────┤
+│   📍 42.3601°, -71.0589°               │
+├─────────────────────────────────────────┤
+│          📐 View Formulas              │
+└─────────────────────────────────────────┘
 ```
 
 ### Visual Design
@@ -182,8 +279,19 @@ c) Distance offset:
   - Pulsing sun icon
   - Blinking update indicator
   - Smooth value transitions
+  - Real-time graph updates with moving markers
+- **Color Coding for Locations**:
+  - User location: Red
+  - Comparison locations: Cycling through blue, green, orange, purple, cyan, pink
+  - Consistent colors across legend and graph
 - **Typography**: Clean, modern sans-serif font
 - **Responsive**: Works on mobile and desktop
+- **Graph Styling**:
+  - Semi-transparent vertical line for current time
+  - Yellow position markers for current values
+  - Grid lines for readability
+  - Dual Y-axes with clear labels
+  - Dashed lines for elevation, solid for distance
 
 ### Status Indicators
 - Loading state: Yellow background
@@ -196,11 +304,14 @@ c) Distance offset:
 ## File Structure
 ```
 /al-sole
-  ├── index.html           # Main application (all-in-one file)
-  ├── SPECIFICATION.md     # Technical specification document
   ├── CLAUDE.md            # Developer workflow guide for Claude Code
   ├── README.md            # Project overview and usage guide
-  ├── DEPLOYMENT.md        # AWS deployment guide
+  ├── al-sole.code-workspace # VS Code workspace configuration
+  ├── docs/                # Documentation directory
+  │   ├── specification.md # Technical specification document (this file)
+  │   ├── changelog.md     # Log of changes and features added
+  │   ├── deployment.md    # AWS deployment guide
+  │   └── todo.md          # Task tracking and planning
   ├── terraform/           # Infrastructure as code
   │   ├── main.tf          # Main orchestration (providers, ACM, modules)
   │   ├── variables.tf     # Root-level input variables
@@ -209,10 +320,11 @@ c) Distance offset:
   │       ├── cloudfront/  # CloudFront CDN configuration
   │       ├── route53/     # DNS records configuration
   │       └── s3_bucket/   # S3 bucket configuration
-  ├── website/
-  │   └── index.html       # Main website file
-  └── tasks/
-      └── todo.md          # Task tracking and planning
+  ├── scripts/             # Build and deployment scripts
+  │   └── build-local.sh   # Local development build script
+  └── website/
+      ├── index.html       # Main application (single-file, self-contained)
+      └── favicon.png      # Site icon
 ```
 
 ### Implementation Notes
@@ -240,23 +352,33 @@ c) Distance offset:
 ---
 
 ## Future Enhancements (Optional)
-- Add distance to other planets
-- Show visualization of Earth's position in orbit
-- Add light travel time (8+ minutes from Sun)
-- Historical distance graph
+- Add distance to other celestial bodies (Moon, planets)
+- Show 3D visualization of Earth's position in orbit
+- Add light travel time from Sun (8+ minutes)
+- Export graph data to CSV/image
 - Share distance on social media
-- Multiple unit options (AU, light-minutes, etc.)
-- Show sunrise/sunset times
+- Additional unit options (AU, light-minutes, light-seconds)
+- Show precise sunrise/sunset times
+- Add azimuth angle (compass direction to Sun)
+- Historical playback mode (see past dates)
 - Add sound effects or voice announcements
+- Dark mode toggle
+- Internationalization (multiple languages)
 
 ---
 
 ## Validation Criteria
 - ✅ Requests and uses user's geolocation
-- ✅ Displays distance in km and miles
-- ✅ Updates in real-time (< 1 second intervals)
+- ✅ Displays distance in user-selected unit (km or miles)
+- ✅ Updates in real-time (100ms intervals)
 - ✅ Shows day/night status correctly
+- ✅ Calculates and displays solar elevation angle
+- ✅ Dual-axis graphs with distance and elevation
+- ✅ Multi-location comparison with color coding
+- ✅ Toggle between 24-hour and yearly views
+- ✅ Current time indicators on graphs
 - ✅ Handles errors gracefully
 - ✅ Responsive design works on mobile
 - ✅ Visually appealing interface
 - ✅ No external dependencies required
+- ✅ User preferences persist via localStorage
