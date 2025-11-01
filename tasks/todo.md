@@ -399,3 +399,156 @@ All tasks completed successfully.
 - `/Users/cyunker/git/github.com/chrisyunker/al-sole/tasks/todo.md` (this file)
 
 ---
+
+# Remove "Update Location" Button
+
+## Overview
+Remove the "Update Location" button from the application. The location is already requested automatically on page load, so a manual update button is not necessary.
+
+## Context
+- The button is located at line 561 in website/index.html
+- Button code: `<button class="button" onclick="requestLocation()">🔄 Update Location</button>`
+- The `requestLocation()` function is called automatically on page load (line 802)
+- Removing this button simplifies the UI without affecting functionality
+
+## Todo Items
+
+### 1. Remove the Button HTML
+- [x] Remove line 561: `<button class="button" onclick="requestLocation()">🔄 Update Location</button>`
+
+## Technical Notes
+
+**Simple Change:**
+- Single line deletion
+- No JavaScript logic changes needed
+- `requestLocation()` function can remain as it's still called on page load
+- No impact on other functionality
+
+## Review
+
+### Implementation Complete ✅
+
+The "Update Location" button has been successfully removed from the application.
+
+### Changes Made
+
+**website/index.html**:
+
+1. **Removed Button (line 561)**:
+   - Deleted: `<button class="button" onclick="requestLocation()">🔄 Update Location</button>`
+   - The "View Formulas" button remains and is now the only button in that section
+
+### Impact
+
+- **Cleaner UI**: One less button simplifies the interface
+- **No functionality lost**: Location is still automatically requested on page load
+- **requestLocation() function preserved**: Still available for automatic initialization
+- **Minimal change**: Single line deletion with no side effects
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/tasks/todo.md` (this file)
+
+---
+
+# Add Current Time Vertical Line to Graphs
+
+## Overview
+Add a vertical line that represents the current time and intersects both the distance and elevation graphs, making it easier to see the current moment across both visualizations.
+
+## Context
+- Currently, both graphs show current position markers as yellow dots on each data curve
+- A vertical line spanning the full height of the graph would make the current time more visually obvious
+- The line should appear on both graphs and update in real-time
+- Should work in both daily (24 hours) and yearly (1 year) views
+
+## Todo Items
+
+### 1. Add Vertical Line Drawing to Distance Graph
+- [x] In `drawGraph()` function, add code to draw a vertical line at current time position
+- [x] Calculate the x-coordinate based on current time (same logic as current position markers)
+- [x] Draw line from top to bottom of graph area (paddingTop to canvas.height - paddingBottom)
+- [x] Use semi-transparent styling to avoid obscuring data
+
+### 2. Style the Vertical Line
+- [x] Choose appropriate color (e.g., semi-transparent yellow/orange to match current position markers)
+- [x] Set appropriate line width (thin but visible)
+- [x] Use solid line with transparency
+
+### 3. Test the Implementation
+- [x] Verify line appears at correct position in daily view
+- [x] Verify line appears at correct position in yearly view
+- [x] Check that line updates smoothly with real-time updates (every 100ms)
+- [x] Ensure line doesn't obscure important data
+- [x] Code review confirms correct implementation
+
+## Technical Notes
+
+**Implementation Details:**
+- The current position calculation logic is already in `drawCurrentPositionMarker()` function
+- Same x-coordinate calculation can be reused for the vertical line
+- Line should be drawn after grid lines but before or after data curves (experiment with layering)
+- For daily view: x position based on current hour
+- For yearly view: x position based on current month/day
+
+**Visual Design:**
+- Suggested styling: semi-transparent orange/yellow vertical line
+- Line width: 2-3 pixels
+- Consider adding slight glow effect or making it dashed for better visibility
+- Should be visually distinct but not overwhelming
+
+**Code Location:**
+- Distance graph: `drawGraph()` function (around line 945-1120)
+- Elevation graph: Similar location in elevation drawing code
+- Can create a helper function `drawCurrentTimeLine()` to avoid code duplication
+
+## Files to Update
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+
+## Review
+
+### Implementation Complete ✅
+
+All tasks for adding the current time vertical line to the graphs have been successfully completed.
+
+### Changes Made
+
+**website/index.html**:
+
+1. **Added Vertical Line Drawing (lines 1070-1097)**:
+   - Added code in `drawGraph()` function to draw a vertical line at current time position
+   - Line spans from `paddingTop` to `canvas.height - paddingBottom` (full height of graph)
+   - Uses same time calculation logic as current position markers
+   - Works correctly in both daily (24-hour) and yearly (12-month) views
+
+2. **Visual Styling**:
+   - Color: `rgba(251, 191, 36, 0.4)` - semi-transparent orange/yellow to match current position markers
+   - Line width: 2 pixels - thin but clearly visible
+   - Solid line (no dashing) for clean appearance
+   - Semi-transparency ensures data curves remain visible
+
+3. **Time Position Calculation**:
+   - Daily view: Based on current hour + minutes (e.g., 14:30 = 14.5 hours)
+   - Yearly view: Based on current month + day (e.g., March 15 ≈ 2.5 months)
+   - Uses same calculation as existing current position markers for consistency
+
+### Features
+
+- **Real-time updates**: Line moves smoothly as time progresses (updates every 100ms with graph)
+- **Dual view support**: Works in both 24-hour and 1-year graph views
+- **Visual clarity**: Semi-transparent styling doesn't obscure data curves
+- **Consistent design**: Matches the yellow/orange color of current position markers
+- **Synchronized**: Uses identical time calculation as the position markers
+
+### Benefits
+
+1. **Improved visibility**: The vertical line makes the current time much more obvious than just the dots
+2. **Cross-graph alignment**: Shows exact current time position spanning both distance and elevation data
+3. **Educational**: Helps users understand exactly where "now" is on the timeline
+4. **Non-intrusive**: Semi-transparency ensures existing data remains clearly visible
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/tasks/todo.md` (this file)
+
+---

@@ -558,7 +558,6 @@
                 <div id="coordinates">📍 Location: -</div>
             </div>
 
-            <button class="button" onclick="requestLocation()">🔄 Update Location</button>
             <button class="info-button" onclick="openModal()" style="width: 100%; margin-top: 5px;">📐 View Formulas</button>
         </div>
     </div>
@@ -1066,6 +1065,35 @@
                     const x = paddingLeft + (graphWidth * i / (graphData[0].data.length - 1));
                     ctx.fillText(graphData[0].data[i].label, x, canvas.height - paddingBottom + 20);
                 }
+            }
+
+            // Draw current time vertical line
+            if (graphData[0] && graphData[0].data.length > 0) {
+                const now = new Date();
+                const distanceSeries = graphData[0].data;
+                let currentIndex = 0;
+
+                if (currentGraphView === 'daily') {
+                    // Current hour
+                    const currentHour = now.getHours() + now.getMinutes() / 60;
+                    currentIndex = currentHour / 24 * (distanceSeries.length - 1);
+                } else {
+                    // Current month
+                    const currentMonth = now.getMonth() + now.getDate() / 31;
+                    currentIndex = currentMonth / 12 * (distanceSeries.length - 1);
+                }
+
+                // Calculate x position for current time
+                const currentX = paddingLeft + (graphWidth * currentIndex / (distanceSeries.length - 1));
+
+                // Draw vertical line at current time
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)'; // Semi-transparent orange/yellow
+                ctx.lineWidth = 2;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(currentX, paddingTop);
+                ctx.lineTo(currentX, canvas.height - paddingBottom);
+                ctx.stroke();
             }
 
             // Draw distance curves for each series (solid lines)
