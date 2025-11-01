@@ -333,3 +333,69 @@ All tasks completed successfully.
 - `/Users/cyunker/git/github.com/chrisyunker/al-sole/tasks/todo.md` (this file)
 
 ---
+
+# Add Elevation to Yearly Graph
+
+## Overview
+Extended the dual-axis graph to show solar elevation angle in the yearly view as well, showing how the maximum sun angle varies throughout the year.
+
+## Context
+- Initially, elevation was only shown in the 24-hour (daily) view
+- The yearly view should also show elevation to demonstrate seasonal variation
+- Yearly elevation shows the sun's angle at solar noon for each month
+
+## Implementation Complete ✅
+
+All tasks completed successfully.
+
+### Changes Made
+
+**website/index.html**:
+
+1. **Yearly Elevation Data Generator (lines 914-944)**:
+   - Created `generateYearlyElevationData()` function
+   - Calculates solar elevation at solar noon (12:00) for mid-month of each month
+   - Shows seasonal variation in maximum sun angle throughout the year
+   - Supports multi-location comparison
+
+2. **Updated Graph Rendering (lines 978-1111)**:
+   - Removed `currentGraphView === 'daily'` condition from elevation drawing
+   - Right Y-axis now appears in both daily and yearly views
+   - Elevation curves (dashed lines) render in both views
+   - Horizon line only shows in daily view (where it's relevant)
+
+3. **Updated View Switching (lines 1196-1215)**:
+   - `setGraphView()` generates yearly elevation data when switching to yearly view
+   - Both `elevationData` types regenerated on view change
+
+4. **Updated Data Refresh (lines 1602-1612)**:
+   - `updateGraphData()` generates appropriate elevation data for each view
+   - Yearly elevation regenerates when comparison locations change
+
+5. **Updated Legend (lines 1503-1528)**:
+   - Shows "Solid = Distance | Dashed = Elevation" note in both views
+   - Condition changed from `currentGraphView === 'daily'` to `elevationData.length > 0`
+
+6. **Updated Current Position Markers (lines 1169-1194)**:
+   - Elevation markers now work in both views
+   - Shows current position on both distance and elevation curves
+
+### Features
+
+**Yearly View Now Shows:**
+- **Distance curve** (solid): Earth's orbital distance variation (perihelion to aphelion)
+- **Elevation curve** (dashed): Maximum sun angle at solar noon for each month
+- **Dual Y-axes**: Left = distance (km/mi), Right = elevation (degrees)
+- **Seasonal patterns**: How sun angle changes with Earth's axial tilt throughout the year
+
+**Educational Value:**
+- Shows relationship between Earth's orbit and seasonal sun angles
+- Demonstrates that seasons are caused by axial tilt (elevation changes), not distance
+- At equator: sun reaches 90° twice per year (equinoxes)
+- At higher latitudes: clear seasonal variation in maximum sun angle
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/tasks/todo.md` (this file)
+
+---

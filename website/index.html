@@ -911,6 +911,38 @@
             return series;
         }
 
+        // Generate yearly elevation data (12 months, at solar noon)
+        function generateYearlyElevationData() {
+            if (!userLat || !userLon) return [];
+
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            // Create array of all locations (user + comparisons)
+            const allLocations = [
+                { lat: userLat, lon: userLon, label: 'Your Location', color: colorPalette[0] },
+                ...comparisonLocations
+            ];
+
+            // Generate data for each location
+            const series = allLocations.map(location => {
+                const data = [];
+                for (let month = 0; month < 12; month++) {
+                    // Use mid-month and solar noon (12:00 local solar time)
+                    const testDate = new Date(currentYear, month, 15, 12, 0, 0);
+                    const elevation = calculateSolarElevation(location.lat, location.lon, testDate);
+                    data.push({ x: month, y: elevation, label: monthNames[month] });
+                }
+                return {
+                    location: location,
+                    data: data
+                };
+            });
+
+            return series;
+        }
+
         // Draw the graph
         function drawGraph() {
             if (!ctx || graphData.length === 0) return;
@@ -939,11 +971,11 @@
             const maxDistance = Math.max(...allDistances);
             const distanceRange = maxDistance - minDistance;
 
-            // Find min and max values for elevation (right Y-axis) - only in daily view
+            // Find min and max values for elevation (right Y-axis)
             let minElevation = 0;
             let maxElevation = 90;
             let elevationRange = 90;
-            if (currentGraphView === 'daily' && elevationData.length > 0) {
+            if (elevationData.length > 0) {
                 let allElevations = [];
                 elevationData.forEach(series => {
                     allElevations = allElevations.concat(series.data.map(d => d.y));
@@ -985,8 +1017,8 @@
                 ctx.fillText(label, paddingLeft - 10, y + 4);
             }
 
-            // Draw right Y-axis and labels (Elevation) - only in daily view
-            if (currentGraphView === 'daily' && elevationData.length > 0) {
+            // Draw right Y-axis and labels (Elevation)
+            if (elevationData.length > 0) {
                 // Draw right Y-axis line
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
                 ctx.lineWidth = 2;
@@ -1006,8 +1038,8 @@
                     ctx.fillText(label, canvas.width - paddingRight + 10, y + 4);
                 }
 
-                // Draw horizon line at 0° if applicable
-                if (minElevation < 0 && maxElevation > 0) {
+                // Draw horizon line at 0° if applicable (only in daily view where it makes sense)
+                if (currentGraphView === 'daily' && minElevation < 0 && maxElevation > 0) {
                     const horizonY = canvas.height - paddingBottom - ((0 - minElevation) / elevationRange * graphHeight);
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
                     ctx.lineWidth = 1;
@@ -1056,8 +1088,8 @@
                 ctx.stroke();
             });
 
-            // Draw elevation curves for each series (dashed lines) - only in daily view
-            if (currentGraphView === 'daily' && elevationData.length > 0) {
+            // Draw elevation curves for each series (dashed lines)
+            if (elevationData.length > 0) {
                 elevationData.forEach(series => {
                     ctx.strokeStyle = series.location.color;
                     ctx.lineWidth = 2;
@@ -1134,8 +1166,8 @@
             ctx.arc(x, distanceY, 6, 0, 2 * Math.PI);
             ctx.stroke();
 
-            // Draw elevation marker if in daily view
-            if (currentGraphView === 'daily' && elevationData.length > 0 && elevationData[0] && elevationData[0].data) {
+            // Draw elevation marker
+            if (elevationData.length > 0 && elevationData[0] && elevationData[0].data) {
                 const elevationSeries = elevationData[0].data;
                 let elevationValue;
                 if (idx >= elevationSeries.length - 1) {
@@ -1172,9 +1204,11 @@
             if (view === 'daily') {
                 document.getElementById('dailyViewBtn').classList.add('active');
                 graphData = generateDailyData();
+                elevationData = generateElevationData();
             } else if (view === 'yearly') {
                 document.getElementById('yearlyViewBtn').classList.add('active');
                 graphData = generateYearlyData();
+                elevationData = generateYearlyElevationData();
             }
 
             drawGraph();
@@ -1477,8 +1511,8 @@
 
             let legendHTML = '';
 
-            // Add note about line styles in daily view
-            if (currentGraphView === 'daily') {
+            // Add note about line styles (both views now show elevation)
+            if (elevationData.length > 0) {
                 legendHTML += '<div style="width: 100%; text-align: center; font-size: 0.8em; margin-bottom: 8px; opacity: 0.9;">Solid = Distance | Dashed = Elevation</div>';
             }
 
@@ -1574,6 +1608,7 @@
                 elevationData = generateElevationData();
             } else if (currentGraphView === 'yearly') {
                 graphData = generateYearlyData();
+                elevationData = generateYearlyElevationData();
             }
             drawGraph();
         }
