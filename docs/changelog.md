@@ -1,3 +1,48 @@
+# Add Favicon to Title Heading
+
+## Overview
+Added the favicon image to the left of the "Al Sole" title heading, making the header more visually appealing and reinforcing the sun theme.
+
+## Implementation Complete ✅
+
+### Changes Made
+
+**website/index.html**:
+
+1. **Updated h1 CSS Styling (lines 37-50)**:
+   - Changed from `text-align: center` to flexbox layout
+   - Added `display: flex`, `align-items: center`, `justify-content: center`
+   - Created new `h1 img` CSS rule for favicon styling
+   - Favicon height set to `1em` (matches text size)
+   - Added `0.3em` right margin for spacing between image and text
+
+2. **Added Favicon Image to h1 Tag (line 543)**:
+   - Inserted `<img src="favicon.png" alt="Sun icon">` before "Al Sole" text
+   - Image scales proportionally with heading size
+   - Includes descriptive alt text for accessibility
+
+### Features
+
+- **Consistent branding**: Favicon appears in both browser tab and page heading
+- **Responsive sizing**: Image scales with text using `1em` height
+- **Proper spacing**: Clean gap between icon and text
+- **Accessible**: Includes alt text for screen readers
+- **Centered layout**: Flexbox ensures proper alignment
+
+### Benefits
+
+1. **Visual appeal**: Icon adds visual interest to the header
+2. **Theme reinforcement**: Sun icon reinforces the solar theme of the app
+3. **Professional appearance**: Icon + text is a common and polished design pattern
+4. **Simple implementation**: Minimal CSS changes, no complex positioning
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/changelog.md` (this file)
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/todo.md`
+
+---
+
 # Reorganize Layout: Move Distance Display and Unit Buttons
 
 ## Overview

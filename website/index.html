@@ -35,10 +35,18 @@
         }
 
         h1 {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 10px;
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 img {
+            height: 1em;
+            width: auto;
+            margin-right: 0.3em;
         }
 
         .graph-container {
@@ -532,30 +540,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>Al Sole</h1>
+        <h1><img src="favicon.png" alt="Sun icon">Al Sole</h1>
 
         <div id="status" class="status loading">
             Requesting location access...
         </div>
 
         <div id="mainContent" style="display: none;">
-            <div class="info-table-container">
-                <table class="info-table">
-                    <tr>
-                        <td class="info-table-label">Local Time</td>
-                        <td class="info-table-value" id="localTime">-</td>
-                    </tr>
-                    <tr>
-                        <td class="info-table-label">Solar Noon Offset</td>
-                        <td class="info-table-value" id="solarNoon">-</td>
-                    </tr>
-                    <tr>
-                        <td class="info-table-label">Location</td>
-                        <td class="info-table-value" id="coordinates">-</td>
-                    </tr>
-                </table>
-            </div>
-
             <div class="distance-display">
                 <div class="distance-unit" id="distanceUnitLabel" style="font-size: 1.8em;">
                     You are <span class="distance-value" id="distanceValue" style="display: inline; font-size: 1em; margin: 0;">-</span> kilometers from the Sun
@@ -563,6 +554,23 @@
                 <div style="margin-top: 10px;">
                     <span class="update-indicator"></span>
                 </div>
+            </div>
+
+            <div class="info-table-container">
+                <table class="info-table">
+                    <tr>
+                        <td class="info-table-label">Location</td>
+                        <td class="info-table-value" id="coordinates">-</td>
+                    </tr>
+                    <tr>
+                        <td class="info-table-label">Local Time</td>
+                        <td class="info-table-value" id="localTime">-</td>
+                    </tr>
+                    <tr>
+                        <td class="info-table-label">Solar Noon Offset</td>
+                        <td class="info-table-value" id="solarNoon">-</td>
+                    </tr>                    
+                </table>
             </div>
 
             <div class="graph-container">
@@ -1320,10 +1328,30 @@
             statusEl.textContent = 'Requesting location access...';
 
             if ('geolocation' in navigator) {
+                // Set a timeout to fallback to default location if geolocation takes too long
+                const timeoutId = setTimeout(() => {
+                    statusEl.className = 'status error';
+                    statusEl.innerHTML = 'Location access timed out. Using default location (Boston, MA).<br><small>For local file testing, try using a local web server.</small>';
+                    // Use default location (Boston, MA)
+                    setTimeout(() => {
+                        onLocationSuccess({ coords: { latitude: 42.3601, longitude: -71.0589 } });
+                    }, 2000);
+                }, 5000); // 5 second timeout
+
                 navigator.geolocation.getCurrentPosition(
-                    onLocationSuccess,
-                    onLocationError,
-                    { enableHighAccuracy: true }
+                    (position) => {
+                        clearTimeout(timeoutId);
+                        onLocationSuccess(position);
+                    },
+                    (error) => {
+                        clearTimeout(timeoutId);
+                        onLocationError(error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
                 );
             } else {
                 statusEl.className = 'status error';
@@ -1355,19 +1383,27 @@
             const statusEl = document.getElementById('status');
             statusEl.className = 'status error';
 
+            let errorMessage = '';
             switch(error.code) {
                 case error.PERMISSION_DENIED:
-                    statusEl.textContent = 'Location access denied. Please enable location access and refresh.';
+                    errorMessage = 'Location access denied. Using default location (Boston, MA).';
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    statusEl.textContent = 'Location information unavailable.';
+                    errorMessage = 'Location information unavailable. Using default location (Boston, MA).';
                     break;
                 case error.TIMEOUT:
-                    statusEl.textContent = 'Location request timed out.';
+                    errorMessage = 'Location request timed out. Using default location (Boston, MA).';
                     break;
                 default:
-                    statusEl.textContent = 'An unknown error occurred.';
+                    errorMessage = 'An unknown error occurred. Using default location (Boston, MA).';
             }
+
+            statusEl.innerHTML = errorMessage + '<br><small>For local file testing, try using a local web server.</small>';
+
+            // Use default location (Boston, MA) after showing error for 2 seconds
+            setTimeout(() => {
+                onLocationSuccess({ coords: { latitude: 42.3601, longitude: -71.0589 } });
+            }, 2000);
         }
 
         function updateDistance() {
