@@ -1,3 +1,113 @@
+# Reorganize Layout: Move Distance Display and Unit Buttons
+
+## Overview
+Reorganized the page layout to improve information hierarchy by moving the distance display to the top and relocating the unit toggle buttons below the graph.
+
+## Context
+The previous layout had the unit buttons (Kilometers/Miles) at the top of the distance display, which was visually cluttered. Moving the distance text to the top emphasizes the primary information, and placing the unit buttons below the graph groups them with the visualization controls.
+
+## Implementation Complete ✅
+
+### Changes Made
+
+**website/index.html**:
+
+1. **Moved Distance Display to Top (lines 559-566)**:
+   - Removed unit buttons from distance-display div
+   - Distance text "You are X from the Sun" now appears immediately after location table
+   - Keeps the update indicator (green blinking dot)
+   - More prominent placement for primary information
+
+2. **Moved Unit Buttons Below Graph (lines 576-579)**:
+   - Added unit toggle buttons after the canvas element
+   - Buttons now appear below the graph visualization
+   - Same styling maintained (flexbox, centered, 10px gap)
+   - Changed margin from `margin-bottom: 15px` to `margin-top: 15px`
+
+### New Layout Order
+
+1. Location table (Local Time, Solar Noon Offset, Location)
+2. **Distance from Sun** (large text with update indicator)
+3. Graph title and view toggles (24 Hours / 1 Year)
+4. Graph legend and canvas
+5. **Unit buttons** (Kilometers / Miles)
+6. Compare Locations section
+
+### Benefits
+
+1. **Better information hierarchy**: Most important info (your distance) appears first
+2. **Cleaner top section**: Distance display is uncluttered without buttons
+3. **Grouped controls**: Unit buttons are now near the graph, which they affect
+4. **Logical flow**: Info flows from general (where you are) to specific (exact distance) to visual (graph)
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/changelog.md` (this file)
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/todo.md`
+
+---
+
+# Move Location Information to Top in Table Format
+
+## Overview
+Reorganized the user interface to display Local Time, Solar Noon Offset, and Location coordinates at the top of the page in a clean table format with labels on the left and values on the right.
+
+## Context
+Previously, this information was displayed at the bottom of the page using separate UI components (info-grid cards for time/solar noon, and a separate div for coordinates). Moving it to the top makes the location information immediately visible and more prominent.
+
+## Implementation Complete ✅
+
+### Changes Made
+
+**website/index.html**:
+
+1. **Added Table CSS Styles (lines 135-168)**:
+   - Created `.info-table-container` - container with background and rounded corners
+   - Created `.info-table` - full-width table with collapsed borders
+   - Created `.info-table-label` - left-aligned labels (50% width, 0.8 opacity)
+   - Created `.info-table-value` - right-aligned values (bold, larger font)
+   - Added row separators with subtle border-bottom styling
+
+2. **Added Table HTML Structure (lines 542-557)**:
+   - Moved location info to top of `mainContent` section (before distance display)
+   - Created 3-row table:
+     - Row 1: Local Time | [value]
+     - Row 2: Solar Noon Offset | [value]
+     - Row 3: Location | [coordinates]
+   - All using existing element IDs (localTime, solarNoon, coordinates)
+
+3. **Removed Old UI Components (lines ~555-568, removed)**:
+   - Removed `.info-grid` div with two `.info-card` components
+   - Removed `.location-info` div
+   - Reduced UI redundancy
+
+4. **Updated JavaScript (line 1410)**:
+   - Removed emoji (📍) from coordinates display
+   - Now shows just "40.7128°, -74.0060°" format
+
+### Features
+
+- **Top placement**: Information is immediately visible when page loads
+- **Clean table layout**: Professional appearance with consistent spacing
+- **Left/right alignment**: Labels on left, values on right for easy scanning
+- **Consistent styling**: Matches overall glassmorphism theme
+- **Responsive**: Table adapts to container width
+- **Simplified**: Removed redundant location emoji
+
+### Benefits
+
+1. **Better UX**: Most important info (where you are, what time it is) shown first
+2. **Cleaner design**: Table format is more organized than scattered cards
+3. **Less scrolling**: Users don't need to scroll to bottom to find their location
+4. **Professional look**: Table format is conventional and familiar
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/changelog.md` (this file)
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/todo.md`
+
+---
+
 # Updated Specification to Reflect Current State
 
 ## Overview

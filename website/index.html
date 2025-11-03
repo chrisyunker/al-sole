@@ -132,6 +132,41 @@
             font-size: 0.95em;
         }
 
+        .info-table-container {
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .info-table-label {
+            padding: 12px;
+            text-align: left;
+            opacity: 0.8;
+            font-size: 0.95em;
+            width: 50%;
+        }
+
+        .info-table-value {
+            padding: 12px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
         .status {
             text-align: center;
             padding: 15px;
@@ -504,16 +539,27 @@
         </div>
 
         <div id="mainContent" style="display: none;">
+            <div class="info-table-container">
+                <table class="info-table">
+                    <tr>
+                        <td class="info-table-label">Local Time</td>
+                        <td class="info-table-value" id="localTime">-</td>
+                    </tr>
+                    <tr>
+                        <td class="info-table-label">Solar Noon Offset</td>
+                        <td class="info-table-value" id="solarNoon">-</td>
+                    </tr>
+                    <tr>
+                        <td class="info-table-label">Location</td>
+                        <td class="info-table-value" id="coordinates">-</td>
+                    </tr>
+                </table>
+            </div>
+
             <div class="distance-display">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div class="distance-unit">You are</div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="toggle-btn active" id="kmBtn" onclick="setUnit('km')">Kilometers</button>
-                        <button class="toggle-btn" id="milesBtn" onclick="setUnit('miles')">Miles</button>
-                    </div>
+                <div class="distance-unit" id="distanceUnitLabel" style="font-size: 1.8em;">
+                    You are <span class="distance-value" id="distanceValue" style="display: inline; font-size: 1em; margin: 0;">-</span> kilometers from the Sun
                 </div>
-                <div class="distance-value" id="distanceValue">-</div>
-                <div class="distance-unit" id="distanceUnitLabel">kilometers from the Sun</div>
                 <div style="margin-top: 10px;">
                     <span class="update-indicator"></span>
                 </div>
@@ -527,6 +573,10 @@
                 </div>
                 <div id="graphLegend" class="graph-legend"></div>
                 <canvas id="distanceGraph" width="600" height="340"></canvas>
+                <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+                    <button class="toggle-btn active" id="kmBtn" onclick="setUnit('km')">Kilometers</button>
+                    <button class="toggle-btn" id="milesBtn" onclick="setUnit('miles')">Miles</button>
+                </div>
             </div>
 
             <div class="comparison-section" id="comparisonSection">
@@ -552,21 +602,6 @@
                 </div>
                 <button class="add-location-btn" onclick="addComparisonLocation()">Add Location</button>
                 <div id="comparisonLocations" class="comparison-locations"></div>
-            </div>
-
-            <div class="info-grid">
-                <div class="info-card">
-                    <div class="info-label">Local Time</div>
-                    <div class="info-value" id="localTime">-</div>
-                </div>
-                <div class="info-card">
-                    <div class="info-label">Solar Noon Offset</div>
-                    <div class="info-value" id="solarNoon">-</div>
-                </div>
-            </div>
-
-            <div class="location-info">
-                <div id="coordinates">📍 Location: -</div>
             </div>
 
             <button class="info-button" onclick="openModal()" style="width: 100%; margin-top: 5px;">📐 View Formulas</button>
@@ -1351,18 +1386,19 @@
             );
 
             // Update display based on selected unit
-            let displayValue, unitLabel;
+            let displayValue, unitWord;
             if (currentUnit === 'km') {
                 displayValue = userDistanceKm.toLocaleString('en-US', { maximumFractionDigits: 0 });
-                unitLabel = 'kilometers from the Sun';
+                unitWord = 'kilometers';
             } else {
                 const distanceMiles = userDistanceKm * 0.621371;
                 displayValue = distanceMiles.toLocaleString('en-US', { maximumFractionDigits: 0 });
-                unitLabel = 'miles from the Sun';
+                unitWord = 'miles';
             }
 
             document.getElementById('distanceValue').textContent = displayValue;
-            document.getElementById('distanceUnitLabel').textContent = unitLabel;
+            document.getElementById('distanceUnitLabel').innerHTML =
+                `You are <span class="distance-value" style="display: inline; font-size: 1em; margin: 0;">${displayValue}</span> ${unitWord} from the Sun`;
 
             document.getElementById('localTime').textContent =
                 now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1371,7 +1407,7 @@
             document.getElementById('solarNoon').textContent = solarNoonOffset;
 
             document.getElementById('coordinates').textContent =
-                `📍 ${userLat.toFixed(4)}°, ${userLon.toFixed(4)}°`;
+                `${userLat.toFixed(4)}°, ${userLon.toFixed(4)}°`;
 
             // Update graph with current position
             if (graphData.length > 0) {
