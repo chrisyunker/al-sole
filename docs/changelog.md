@@ -1,3 +1,79 @@
+# Improve Y-Axis Distance Labels to Show Variation as Offset
+
+## Overview
+Changed the distance graph's Y-axis labels from showing absolute distances (e.g., "148.36M km", "148.37M km") to showing relative offset from the baseline (e.g., "+5,000 km", "-3,000 km"), making the variation much clearer and easier to understand.
+
+## Context
+The previous Y-axis labels showed absolute distances with 2 decimal places in millions. Since daily distance variation is only ~12,000 km out of ~149 million km (about 0.008%), most labels looked nearly identical (e.g., "148.36M km" to "148.37M km"), making it difficult to see the actual variation in the graph.
+
+## Implementation Complete ✅
+
+All tasks completed successfully.
+
+### Changes Made
+
+**website/index.html**:
+
+1. **Updated Y-Axis Label Calculation (lines 1100-1127)**:
+   - Calculate average distance as baseline: `avgDistance = (minDistance + maxDistance) / 2`
+   - Show offset from average instead of absolute values
+   - Format with sign: "+5,000 km" or "-3,000 km" instead of "148.36M km"
+   - Use `.toFixed(0)` for whole numbers (no decimals needed for offsets)
+   - Changed unit suffix from "M km" / "M mi" to "km" / "mi"
+
+2. **Added Baseline Indicator Label (lines 1120-1127)**:
+   - Shows baseline distance above the graph (e.g., "Baseline: 148.36M km")
+   - Centered, smaller font (10px)
+   - Slightly transparent (0.6 opacity) to be non-intrusive
+   - Provides context for what the offsets are relative to
+   - Works with both km and miles units
+
+### Features
+
+- **Clear variation visibility**: Offset labels make the ~12,000 km daily variation obvious
+- **Signed numbers**: "+" and "-" prefixes clearly show above/below baseline
+- **Contextual baseline**: Small label shows the absolute baseline distance
+- **Unit agnostic**: Works correctly with both kilometers and miles
+- **View agnostic**: Works in both daily (24-hour) and yearly views
+- **Simple formatting**: Whole numbers without unnecessary decimals
+
+### Benefits
+
+1. **Better data visualization**: The actual variation is now clearly visible in the labels
+2. **Educational value**: Shows how much your distance changes relative to average
+3. **Easier interpretation**: "±5,000 km" is more meaningful than "148.36M vs 148.37M"
+4. **Maintains context**: Baseline label shows the absolute distance for reference
+
+### Example Before and After
+
+**Before:**
+```
+148.37M km  ← top
+148.36M km
+148.36M km
+148.36M km  ← labels look very similar
+148.36M km
+148.36M km  ← bottom
+```
+
+**After:**
+```
+Baseline: 148.36M km
++6,000 km   ← top
++3,600 km
++1,200 km
+-1,200 km   ← variation is clear
+-3,600 km
+-6,000 km   ← bottom
+```
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/changelog.md` (this file)
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/todo.md`
+
+---
+
 # Change Color Scheme from Green to Blue
 
 ## Overview

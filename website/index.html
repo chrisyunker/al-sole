@@ -1097,17 +1097,34 @@
                 ctx.stroke();
             }
 
-            // Draw left Y-axis labels (Distance)
+            // Draw left Y-axis labels (Distance as offset from average)
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.font = '12px sans-serif';
             ctx.textAlign = 'right';
-            const unitSuffix = currentUnit === 'miles' ? 'M mi' : 'M km';
+
+            // Calculate average distance for baseline
+            const avgDistance = (minDistance + maxDistance) / 2;
+            const unitSuffix = currentUnit === 'miles' ? ' mi' : ' km';
+
             for (let i = 0; i <= 5; i++) {
                 const y = paddingTop + (graphHeight * i / 5);
                 const value = maxDistance - (distanceRange * i / 5);
-                const label = (value / 1000000).toFixed(2) + ' ' + unitSuffix;
+                const offset = value - avgDistance;
+
+                // Format offset with + or - sign
+                const sign = offset >= 0 ? '+' : '';
+                const label = sign + offset.toFixed(0) + unitSuffix;
                 ctx.fillText(label, paddingLeft - 10, y + 4);
             }
+
+            // Draw baseline indicator label
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.font = '14px sans-serif';
+            ctx.textAlign = 'left';
+            const baselineLabel = currentUnit === 'miles'
+                ? `Baseline: ${(avgDistance / 1000000).toFixed(2)}M mi`
+                : `Baseline: ${(avgDistance / 1000000).toFixed(2)}M km`;
+            ctx.fillText(baselineLabel, 10, 20);
 
             // Draw right Y-axis and labels (Elevation)
             if (elevationData.length > 0) {
