@@ -1,3 +1,60 @@
+# Fix Kilometers/Miles Toggle Bug
+
+## Overview
+Fixed a critical bug where the kilometers/miles toggle buttons did not properly update the distance display after the first change.
+
+## Context
+The toggle buttons would update the first time, but subsequent toggles would fail silently. The issue was caused by the `distanceValue` element ID being dynamically recreated without the ID attribute, causing subsequent DOM lookups to fail.
+
+## Implementation Complete ✅
+
+### Problem Identified
+
+**Root Cause**: In the `updateDistance()` function (line 1435-1437):
+1. Line 1435 updates element with id="distanceValue"
+2. Lines 1436-1437 replace innerHTML with a new span
+3. The new span was missing the id="distanceValue" attribute
+4. Future updates fail because getElementById('distanceValue') returns null
+
+### Changes Made
+
+**website/index.html**:
+
+1. **Fixed innerHTML Template (line 1437)**:
+   - Added missing `id="distanceValue"` attribute to the dynamically generated span
+   - Changed from: `<span class="distance-value" style="display: inline; font-size: 1em; margin: 0;">`
+   - Changed to: `<span class="distance-value" id="distanceValue" style="display: inline; font-size: 1em; margin: 0;">`
+
+### Features
+
+- **Toggle now works consistently**: Can switch between km and miles unlimited times
+- **Graph updates correctly**: Y-axis labels change between "M km" and "M mi"
+- **Text updates correctly**: Main distance display updates between kilometers and miles
+- **Preference persists**: localStorage still saves the selected unit across sessions
+
+### Test Results
+
+All tests passed successfully:
+- ✓ Initial page load shows correct unit (km by default, or saved preference)
+- ✓ Clicking "Miles" converts distance correctly (148M km → 92M mi)
+- ✓ Graph Y-axis updates correctly (M km → M mi)
+- ✓ Clicking "Kilometers" converts back correctly (92M mi → 148M km)
+- ✓ Multiple toggles work without errors
+- ✓ No JavaScript errors in console
+
+### Benefits
+
+1. **Restored functionality**: Users can now freely switch between units as intended
+2. **Simple fix**: One-line change resolved the issue
+3. **No side effects**: All other functionality remains unchanged
+4. **Prevention**: Ensures DOM elements maintain their IDs after updates
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/changelog.md` (this file)
+
+---
+
 # Add Favicon to Title Heading
 
 ## Overview

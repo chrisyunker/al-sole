@@ -320,8 +320,6 @@ Where:
   │       ├── cloudfront/  # CloudFront CDN configuration
   │       ├── route53/     # DNS records configuration
   │       └── s3_bucket/   # S3 bucket configuration
-  ├── scripts/             # Build and deployment scripts
-  │   └── build-local.sh   # Local development build script
   └── website/
       ├── index.html       # Main application (single-file, self-contained)
       └── favicon.png      # Site icon

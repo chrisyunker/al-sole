@@ -1434,7 +1434,7 @@
 
             document.getElementById('distanceValue').textContent = displayValue;
             document.getElementById('distanceUnitLabel').innerHTML =
-                `You are <span class="distance-value" style="display: inline; font-size: 1em; margin: 0;">${displayValue}</span> ${unitWord} from the Sun`;
+                `You are <span class="distance-value" id="distanceValue" style="display: inline; font-size: 1em; margin: 0;">${displayValue}</span> ${unitWord} from the Sun`;
 
             document.getElementById('localTime').textContent =
                 now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
