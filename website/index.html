@@ -80,8 +80,8 @@
         }
 
         .toggle-btn.active {
-            background: rgba(74, 222, 128, 0.3);
-            border-color: #4ade80;
+            background: rgba(96, 165, 250, 0.3);
+            border-color: #60a5fa;
         }
 
         #distanceGraph {
@@ -214,7 +214,7 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: #4ade80;
+            background: #60a5fa;
             display: inline-block;
             margin-left: 5px;
             animation: blink 1s infinite;
@@ -309,11 +309,11 @@
             border-radius: 8px;
             margin: 15px 0;
             font-family: 'Courier New', monospace;
-            border-left: 4px solid #4ade80;
+            border-left: 4px solid #60a5fa;
         }
 
         .formula-title {
-            color: #4ade80;
+            color: #60a5fa;
             font-weight: bold;
             margin-bottom: 8px;
         }
@@ -324,7 +324,7 @@
         }
 
         .info-button {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(96, 165, 250, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
             padding: 8px 16px;
@@ -405,8 +405,8 @@
 
         .add-location-btn {
             padding: 10px 20px;
-            background: rgba(74, 222, 128, 0.3);
-            border: 1px solid #4ade80;
+            background: rgba(96, 165, 250, 0.3);
+            border: 1px solid #60a5fa;
             border-radius: 6px;
             color: white;
             font-size: 0.9em;
@@ -416,7 +416,7 @@
         }
 
         .add-location-btn:hover {
-            background: rgba(74, 222, 128, 0.5);
+            background: rgba(96, 165, 250, 0.5);
         }
 
         .comparison-locations {
@@ -541,6 +541,7 @@
 <body>
     <div class="container">
         <h1><img src="favicon.png" alt="Sun icon">Al Sole</h1>
+        <h3><center>(To the Sun)</center></h3>
 
         <div id="status" class="status loading">
             Requesting location access...
@@ -548,12 +549,13 @@
 
         <div id="mainContent" style="display: none;">
             <div class="distance-display">
-                <div class="distance-unit" id="distanceUnitLabel" style="font-size: 1.8em;">
-                    You are <span class="distance-value" id="distanceValue" style="display: inline; font-size: 1em; margin: 0;">-</span> kilometers from the Sun
-                </div>
                 <div style="margin-top: 10px;">
                     <span class="update-indicator"></span>
                 </div>
+                <div class="distance-unit" id="distanceUnitLabel" style="font-size: 1.8em;">
+                    You are <span class="distance-value" id="distanceValue" style="display: inline; font-size: 1em; margin: 0;">-</span> kilometers from the Sun
+                </div>
+
             </div>
 
             <div class="info-table-container">
@@ -612,7 +614,7 @@
                 <div id="comparisonLocations" class="comparison-locations"></div>
             </div>
 
-            <button class="info-button" onclick="openModal()" style="width: 100%; margin-top: 5px;">📐 View Formulas</button>
+            <button class="info-button" onclick="openModal()" style="margin-top: 5px;">About</button>
         </div>
     </div>
 
@@ -620,7 +622,13 @@
     <div id="formulaModal" class="modal" onclick="closeModalOnOutsideClick(event)">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <h2>📐 Distance Calculation Formulas</h2>
+            <h2>About Al Sole</h2>
+
+            <p style="text-align: left;">
+                Website by <a href="https://yunker.dev" target="_blank" style="color: #60a5fa; text-decoration: none;">Chris Yunker</a><br>
+            </p>
+
+            <h3 style="margin-top: 30px; text-align: center; font-size: 1.6em;">Formulas</h3>
 
             <h3>1. Earth-Sun Distance</h3>
             <p>Earth's orbit around the Sun is elliptical, not circular. The distance varies throughout the year:</p>
@@ -703,6 +711,37 @@
                 • It represents true solar time based on Earth's rotation
             </p>
 
+            <h3>5. Solar Elevation Angle</h3>
+            <p>The angle of the Sun above or below the horizon at your location:</p>
+
+            <div class="formula">
+                <div class="formula-title">Solar Declination:</div>
+                <span class="variable">δ</span> = 23.45° × sin(360° × (284 + <span class="variable">N</span>) / 365)
+            </div>
+
+            <p><strong>Where:</strong></p>
+            <p>
+                • <span class="variable">δ</span> = solar declination (Sun's angle relative to equator)<br>
+                • <span class="variable">N</span> = day of year (1-365)<br>
+                • Varies from -23.45° (winter solstice) to +23.45° (summer solstice)
+            </p>
+
+            <div class="formula">
+                <div class="formula-title">Solar Elevation Angle:</div>
+                sin(<span class="variable">α</span>) = sin(<span class="variable">φ</span>) × sin(<span class="variable">δ</span>) + cos(<span class="variable">φ</span>) × cos(<span class="variable">δ</span>) × cos(<span class="variable">H</span>)
+            </div>
+
+            <p><strong>Where:</strong></p>
+            <p>
+                • <span class="variable">α</span> = solar elevation angle<br>
+                • <span class="variable">φ</span> = observer's latitude<br>
+                • <span class="variable">δ</span> = solar declination<br>
+                • <span class="variable">H</span> = solar hour angle<br>
+                • Positive values: Sun above horizon (daytime)<br>
+                • Negative values: Sun below horizon (nighttime)<br>
+                • 0°: Sun at horizon (sunrise/sunset)
+            </p>
+
             <h3>Real-Time Updates</h3>
             <p>This application recalculates all values every 100 milliseconds to show how your distance changes in real-time as Earth rotates on its axis. You can see the numbers change continuously!</p>
 
@@ -723,7 +762,7 @@
         let canvas = null;
         let ctx = null;
         let comparisonLocations = [];
-        const colorPalette = ['#4ade80', '#ff6b6b', '#4ecdc4', '#ffd93d', '#a78bfa'];
+        const colorPalette = ['#60a5fa', '#ff6b6b', '#4ecdc4', '#ffd93d', '#a78bfa'];
         const MAX_LOCATIONS = 4;
 
         // Preset cities around the world

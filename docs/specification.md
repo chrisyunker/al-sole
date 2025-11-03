@@ -273,16 +273,16 @@ Where:
 ```
 
 ### Visual Design
-- **Color Scheme**: Blue gradient background (sky/space theme)
+- **Color Scheme**: Blue gradient background (sky/space theme) with blue accent colors (#60a5fa)
 - **Glass-morphism**: Semi-transparent cards with blur effect
 - **Animations**:
   - Pulsing sun icon
-  - Blinking update indicator
+  - Blinking blue update indicator
   - Smooth value transitions
   - Real-time graph updates with moving markers
 - **Color Coding for Locations**:
-  - User location: Red
-  - Comparison locations: Cycling through blue, green, orange, purple, cyan, pink
+  - User location: Blue (#60a5fa)
+  - Comparison locations: Cycling through red, cyan, yellow, purple
   - Consistent colors across legend and graph
 - **Typography**: Clean, modern sans-serif font
 - **Responsive**: Works on mobile and desktop

@@ -1,3 +1,161 @@
+# Change Color Scheme from Green to Blue
+
+## Overview
+Changed the entire color scheme from green shades to blue shades throughout the application for a fresh new look while maintaining all functionality.
+
+## Context
+The previous color scheme used green (#4ade80 / rgba(74, 222, 128, ...)) as the primary accent color. The new scheme uses blue (#60a5fa / rgba(96, 165, 250, ...)) which provides a different aesthetic while maintaining visual consistency.
+
+## Implementation Complete ✅
+
+### Changes Made
+
+**website/index.html**:
+
+1. **CSS Color Updates**:
+   - Line 83-84: Toggle button active state - changed to blue background and border
+   - Line 217: Update indicator dot - changed to blue
+   - Line 312: Formula border-left - changed to blue
+   - Line 316: Formula title color - changed to blue
+   - Line 408-409: Add location button - changed to blue background and border
+   - Line 419: Add location button hover - changed to blue background
+   - Line 628: Link color in About modal - changed to blue
+
+2. **JavaScript Color Updates**:
+   - Line 765: Color palette array - changed first color from green (#4ade80) to blue (#60a5fa)
+
+### Affected UI Elements
+
+All of these now display in blue instead of green:
+- Toggle buttons (active state) for graph views and units
+- Blinking update indicator
+- Formula blocks in About modal (border and title)
+- Add Location button
+- Link to developer's website
+- Primary color in location comparison graphs
+
+### Features
+
+- **Consistent blue theme**: All accent colors updated uniformly
+- **Maintained visual hierarchy**: Blue provides same level of contrast as green
+- **Same functionality**: No behavioral changes, only visual
+- **Professional appearance**: Blue is a common choice for data visualization
+
+### Benefits
+
+1. **Fresh look**: New color scheme gives the app a refreshed appearance
+2. **No functional impact**: All features continue to work exactly as before
+3. **Simple change**: Straightforward color replacement across the codebase
+4. **Maintains accessibility**: Blue shades provide good contrast against dark background
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/changelog.md` (this file)
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/todo.md`
+
+---
+
+# Update About Pop-up Screen
+
+## Overview
+Updated the About modal to better organize content with website attribution at the top, followed by a clear "Formulas" section, and added the Solar Elevation Angle formula.
+
+## Context
+The About modal (previously "Distance Calculation Formulas") needed restructuring to:
+1. Properly credit the website developer
+2. Separate attribution from technical content
+3. Include the Solar Elevation Angle formula that was missing
+
+## Implementation Complete ✅
+
+### Changes Made
+
+**website/index.html**:
+
+1. **Changed Modal Title (line 623)**:
+   - Changed from "📐 Distance Calculation Formulas" to "About Al Sole"
+   - Simpler, more appropriate title for an About section
+
+2. **Added Website Attribution Section (lines 625-629)**:
+   - New "Website" subsection at the top
+   - Text: "Website by Chris Yunker"
+   - Link to https://yunker.dev in green with no underline
+   - Center-aligned for visual emphasis
+
+3. **Added Formulas Section Header (line 631)**:
+   - Large, centered heading "Formulas"
+   - Separates attribution from technical content
+   - 30px top margin for spacing
+
+4. **Added Solar Elevation Angle Formula (lines 714-743)**:
+   - New section "5. Solar Elevation Angle"
+   - Includes Solar Declination formula with explanation
+   - Includes Solar Elevation Angle formula with all variables defined
+   - Explains positive values (daytime), negative values (nighttime), and 0° (sunrise/sunset)
+   - Matches existing formula styling with color-coded variables
+
+### Features
+
+- **Clear attribution**: Developer credit prominently displayed at top
+- **Better organization**: Two distinct sections (attribution and formulas)
+- **Complete documentation**: All calculations now have formulas shown
+- **Consistent styling**: New formula matches existing formula block design
+- **Educational**: Helps users understand how elevation angle is calculated
+
+### Benefits
+
+1. **Professional**: Proper attribution for the website developer
+2. **Educational**: Complete formula documentation helps users learn
+3. **Organized**: Clear separation between who made it and how it works
+4. **Complete**: All astronomical calculations now documented
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/changelog.md` (this file)
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/todo.md`
+
+---
+
+# Change 'View Formulas' Button to 'About'
+
+## Overview
+Changed the "View Formulas" button to "About" and made it smaller and left-aligned instead of spanning the full width of the section.
+
+## Context
+The previous button was labeled "📐 View Formulas" and spanned the full width of its container with `width: 100%` styling. The new design is more compact and left-aligned.
+
+## Implementation Complete ✅
+
+### Changes Made
+
+**website/index.html**:
+
+1. **Updated Button Text and Styling (line 615)**:
+   - Changed text from "📐 View Formulas" to "About"
+   - Removed `width: 100%` from inline styles
+   - Button now sizes naturally to its content
+   - Left-aligned by default (no center alignment on parent)
+
+### Features
+
+- **Compact design**: Button is now smaller and doesn't span full width
+- **Left-aligned**: Button aligns to the left side of the container
+- **Simpler text**: Changed from "📐 View Formulas" to just "About"
+- **Same functionality**: Button still opens the modal when clicked
+
+### Benefits
+
+1. **Less visual weight**: Smaller button is less prominent but still accessible
+2. **Better layout**: Left alignment groups it naturally with other content
+3. **Clearer purpose**: "About" is more intuitive than "View Formulas"
+
+### Files Modified
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/website/index.html`
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/changelog.md` (this file)
+- `/Users/cyunker/git/github.com/chrisyunker/al-sole/docs/todo.md`
+
+---
+
 # Fix Kilometers/Miles Toggle Bug
 
 ## Overview
