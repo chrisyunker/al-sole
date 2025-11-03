@@ -12,7 +12,8 @@
       "Bash(/tmp/new_index.html)",
       "Bash(echo:*)",
       "Bash(./scripts/build-local.sh:*)",
-      "mcp__puppeteer__puppeteer_select"
+      "mcp__puppeteer__puppeteer_select",
+      "mcp__puppeteer__puppeteer_fill"
     ],
     "deny": [],
     "ask": []
