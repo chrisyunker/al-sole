@@ -526,16 +526,16 @@
         }
     </style>
 
-
+  %{ if google_analytics_id != "" }
   <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y5CZBN42C4"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=${google_analytics_id}"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
-    gtag('config', 'G-Y5CZBN42C4');
+    gtag('config', '${google_analytics_id}');
   </script>
+  %{ endif }
 
 </head>
 <body>
@@ -1122,8 +1122,8 @@
             ctx.font = '14px sans-serif';
             ctx.textAlign = 'left';
             const baselineLabel = currentUnit === 'miles'
-                ? `Baseline: ${(avgDistance / 1000000).toFixed(2)}M mi`
-                : `Baseline: ${(avgDistance / 1000000).toFixed(2)}M km`;
+                ? `Baseline: $${(avgDistance / 1000000).toFixed(2)}M mi`
+                : `Baseline: $${(avgDistance / 1000000).toFixed(2)}M km`;
             ctx.fillText(baselineLabel, 10, 20);
 
             // Draw right Y-axis and labels (Elevation)
@@ -1490,7 +1490,7 @@
 
             document.getElementById('distanceValue').textContent = displayValue;
             document.getElementById('distanceUnitLabel').innerHTML =
-                `You are <span class="distance-value" id="distanceValue" style="display: inline; font-size: 1em; margin: 0;">${displayValue}</span> ${unitWord} from the Sun`;
+                `You are <span class="distance-value" id="distanceValue" style="display: inline; font-size: 1em; margin: 0;">$${displayValue}</span> $${unitWord} from the Sun`;
 
             document.getElementById('localTime').textContent =
                 now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1499,7 +1499,7 @@
             document.getElementById('solarNoon').textContent = solarNoonOffset;
 
             document.getElementById('coordinates').textContent =
-                `${userLat.toFixed(4)}°, ${userLon.toFixed(4)}°`;
+                `$${userLat.toFixed(4)}°, $${userLon.toFixed(4)}°`;
 
             // Update graph with current position
             if (graphData.length > 0) {
@@ -1602,8 +1602,8 @@
                 return 'At solar noon';
             }
 
-            const timeStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-            return offset > 0 ? `+${timeStr}` : `-${timeStr}`;
+            const timeStr = hrs > 0 ? `$${hrs}h $${mins}m` : `$${mins}m`;
+            return offset > 0 ? `+$${timeStr}` : `-$${timeStr}`;
         }
 
         // Calculate solar declination (angle of sun relative to equator)
@@ -1686,8 +1686,8 @@
             // Add location items
             legendHTML += graphData.map(series => `
                 <div class="legend-item">
-                    <div class="legend-color" style="background-color: ${series.location.color}"></div>
-                    <span>${series.location.label}</span>
+                    <div class="legend-color" style="background-color: $${series.location.color}"></div>
+                    <span>$${series.location.label}</span>
                 </div>
             `).join('');
 
@@ -1703,7 +1703,7 @@
 
             // Check max locations first
             if (comparisonLocations.length >= MAX_LOCATIONS) {
-                alert(`Maximum ${MAX_LOCATIONS} comparison locations allowed`);
+                alert(`Maximum $${MAX_LOCATIONS} comparison locations allowed`);
                 return;
             }
 
@@ -1741,7 +1741,7 @@
                 }
 
                 // Create location object with custom coordinates
-                const label = `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
+                const label = `$${lat.toFixed(4)}°, $${lon.toFixed(4)}°`;
                 location = {
                     lat: lat,
                     lon: lon,
@@ -1813,9 +1813,9 @@
             }
 
             container.innerHTML = comparisonLocations.map((loc, index) => `
-                <div class="location-item" style="border-left-color: ${loc.color}">
-                    <span class="location-label">${loc.label}</span>
-                    <button class="remove-btn" onclick="removeComparisonLocation(${index})">Remove</button>
+                <div class="location-item" style="border-left-color: $${loc.color}">
+                    <span class="location-label">$${loc.label}</span>
+                    <button class="remove-btn" onclick="removeComparisonLocation($${index})">Remove</button>
                 </div>
             `).join('');
         }

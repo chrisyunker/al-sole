@@ -36,6 +36,6 @@ output "cloudflare_zone_id" {
 output "dns_records" {
   description = "DNS records created"
   value = {
-    a_record    = cloudflare_dns_record.website-a
+    a_record = cloudflare_dns_record.website-a
   }
 }

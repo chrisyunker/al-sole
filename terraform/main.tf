@@ -1,60 +1,36 @@
-terraform {
-  required_version = ">= 1.10"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.97"
-    }
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
-      version = "~> 5.0"
-    }
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.2"
-    }
-  }
-}
-
 # Configure AWS providers
 provider "aws" {
-  alias  = "us_east_1"
   region = var.aws_region
-
-  default_tags {
-    tags = {
-      Project     = "railmap.live"
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-    }
-  }
 }
 
-provider "cloudflare" {
-  api_token = var.cloudflare_api_token
+# Provider alias for us-east-1 (required for CloudFront SSL certificates)
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
 }
 
 # Local values for common configurations
 locals {
-  domain_name = var.domain_name
-  bucket_name = var.domain_name
+  bucket_name = var.s3_bucket_name
   common_tags = {
-    Project     = var.project_name
+    Project     = var.domain_name
     Environment = var.environment
     ManagedBy   = "Terraform"
   }
+  index_html_content = templatefile("${path.root}/../website/index.html.tpl", {
+    google_analytics_id = var.google_analytics_id
+  })
 }
-
 
 # S3 Bucket Module
 module "s3_bucket" {
-  source = "./modules/s3_bucket"
+  source = "git@github.com:chrisyunker/web.git//s3_bucket?ref=c0b4e20"
 
-  s3_bucket_name     = local.bucket_name
-  environment     = var.environment
-  enable_logging  = var.enable_s3_logging
+  bucket_name       = local.bucket_name
+  environment       = var.environment
   enable_versioning = var.enable_versioning
+  enable_logging    = var.enable_s3_logging
+  force_destroy     = var.force_destroy
 
   tags = local.common_tags
 }
@@ -90,8 +66,7 @@ resource "aws_s3_object" "website_files" {
 
 # ACM certificate for alsole.yunker.dev (must be in us-east-1 for CloudFront)
 resource "aws_acm_certificate" "cert" {
-  provider = aws.us_east_1
-
+  provider          = aws.us_east_1
   domain_name       = var.domain_name
   validation_method = "DNS"
 
@@ -116,16 +91,20 @@ resource "aws_acm_certificate_validation" "cert" {
 
 # CloudFront Distribution Module
 module "cloudfront" {
-  source = "./modules/cloudfront"
+  source = "git@github.com:chrisyunker/web.git//cloudfront?ref=d9038b0"
 
   depends_on = [module.s3_bucket]
 
-  domain_name                = local.domain_name
-  bucket_name               = module.s3_bucket.bucket_name
+  domain_name                 = var.domain_name
+  aliases                     = [var.domain_name]
+  bucket_name                 = module.s3_bucket.bucket_name
   bucket_regional_domain_name = module.s3_bucket.bucket_regional_domain_name
-  bucket_arn                = module.s3_bucket.bucket_arn
-  acm_certificate_arn       = aws_acm_certificate_validation.cert.certificate_arn
-  enable_logging            = var.enable_cloudfront_logging
+  bucket_arn                  = module.s3_bucket.bucket_arn
+  acm_certificate_arn         = aws_acm_certificate_validation.cert.certificate_arn
+  default_ttl                 = var.cloudfront_default_ttl
+  max_ttl                     = var.cloudfront_max_ttl
+  price_class                 = var.cloudfront_price_class
+  enable_logging              = var.enable_cloudfront_logging
 
   tags = local.common_tags
 }
@@ -156,7 +135,7 @@ resource "cloudflare_dns_record" "records" {
 
 resource "cloudflare_dns_record" "website-a" {
   zone_id = data.cloudflare_zone.website.zone_id
-  name    = local.domain_name
+  name    = var.domain_name
   content = module.cloudfront.distribution_domain_name
   type    = "CNAME"
   ttl     = 60
@@ -166,9 +145,9 @@ resource "aws_s3_object" "index_html" {
   bucket = module.s3_bucket.bucket_name
   key    = "index.html"
 
-  source = "${path.root}/../website/index.html"
+  content      = local.index_html_content
   content_type = "text/html"
-  etag         = filemd5("${path.root}/../website/index.html")
+  etag         = md5(local.index_html_content)
 
   depends_on = [module.s3_bucket]
 }
@@ -184,7 +163,7 @@ resource "null_resource" "invalidate_cache" {
   }
 
   provisioner "local-exec" {
-    command = "aws cloudfront create-invalidation --distribution-id ${module.cloudfront.                distribution_id} --paths '/*'"
+    command = "aws cloudfront create-invalidation --distribution-id ${module.cloudfront.distribution_id} --paths '/*'"
   }
 
   depends_on = [module.cloudfront, aws_s3_object.website_files, aws_s3_object.index_html]
