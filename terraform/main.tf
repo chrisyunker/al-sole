@@ -11,7 +11,7 @@ provider "aws" {
 
 # Local values for common configurations
 locals {
-  bucket_name = var.s3_bucket_name
+  bucket_name = var.domain_name
   common_tags = {
     Project     = var.domain_name
     Environment = var.environment

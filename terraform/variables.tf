@@ -24,12 +24,6 @@ variable "environment" {
   default     = "prod"
 }
 
-variable "s3_bucket_name" {
-  description = "Name of the S3 bucket for static website hosting"
-  type        = string
-  default     = "al-sole-static-site"
-}
-
 variable "enable_s3_logging" {
   description = "Enable S3 access logging"
   type        = bool
